@@ -1,0 +1,21 @@
+package com.example.lecture_B.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api")
+public class TestController {
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @GetMapping("/test")
+    public ResponseEntity<?> Test (){
+
+
+        return ResponseEntity.status(200).body("연동완료");
+    }
+
+}
