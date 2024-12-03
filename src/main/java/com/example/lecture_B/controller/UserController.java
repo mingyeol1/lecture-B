@@ -38,12 +38,12 @@ public class UserController {
     }
 
     @GetMapping("/signIn")
-    public void getSignin(){
+    public void getSignIn(){
         log.info("로그인 접근");
     }
 
     @PostMapping("/signIn")
-    public ResponseEntity<?> signin(@RequestBody SignUpDTO dto){
+    public ResponseEntity<?> signIn(@RequestBody SignUpDTO dto){
         User user = userService.signIn(dto.getUserId(), dto.getUserPw());
 
         if (user != null){

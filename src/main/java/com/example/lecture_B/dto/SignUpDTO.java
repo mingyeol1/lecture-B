@@ -1,9 +1,11 @@
 package com.example.lecture_B.dto;
 
 import lombok.Data;
+import org.hibernate.annotations.NotFound;
 
 @Data
 public class SignUpDTO {
+    @NotFound
     private String userId;
     private String email;
     private String phoneNum;
