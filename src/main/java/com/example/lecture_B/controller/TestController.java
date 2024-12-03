@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class TestController {
 
-    @CrossOrigin(origins = "http://localhost:3000")
+
     @GetMapping("/test")
     public ResponseEntity<?> Test (){
 
