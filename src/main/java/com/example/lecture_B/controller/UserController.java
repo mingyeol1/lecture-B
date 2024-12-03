@@ -4,10 +4,12 @@ import com.example.lecture_B.dto.SignUpDTO;
 import com.example.lecture_B.dto.UserDTO;
 import com.example.lecture_B.entity.User;
 import com.example.lecture_B.repository.UserRepository;
+import com.example.lecture_B.security.CustomUserDetailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import com.example.lecture_B.service.UserService;
@@ -22,6 +24,7 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CustomUserDetailService customUserDetailService;
 
     @PostMapping("signUp")
     public ResponseEntity<?> signUp(@RequestBody SignUpDTO signUpDTO){
@@ -34,11 +37,24 @@ public class UserController {
         }
     }
 
-    @GetMapping("/signin")
+    @GetMapping("/signIn")
     public void getSignin(){
         log.info("로그인 접근");
     }
 
+    @PostMapping("/signIn")
+    public ResponseEntity<?> signin(@RequestBody SignUpDTO dto){
+        User user = userService.signIn(dto.getUserId(), dto.getUserPw());
 
+        if (user != null){
+            UserDetails userDetails = customUserDetailService.loadUserByUsername(dto.getUserId());
+        }else {
+            log.info("아이디 없을지도.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("아이디 및 비밀번호 오류");
+        }
+
+
+        return ResponseEntity.ok(user);
+    }
 
 }
