@@ -20,6 +20,8 @@ public class User {
     private Long id;
 
     @Column(nullable = false)
+    private String username;
+    @Column(nullable = false)
     private String userId; // 로그인용 ID
     @Column(nullable = false)
     private String userPw;
