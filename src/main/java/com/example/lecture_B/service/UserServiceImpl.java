@@ -2,7 +2,6 @@ package com.example.lecture_B.service;
 
 
 import com.example.lecture_B.dto.SignUpDTO;
-import com.example.lecture_B.dto.UserDTO;
 import com.example.lecture_B.entity.User;
 import com.example.lecture_B.entity.UserRole;
 import com.example.lecture_B.repository.UserRepository;
@@ -28,21 +27,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public User signUp(SignUpDTO dto) throws UseridException {
 
-
-        //이미 가입된 아이디가 있을경우
-        if (userRepository.existsByUserId(dto.getUserId())){
-
-            log.info("이미 존재하는 아이디");
-            throw  new UseridException();
+        if (userRepository.existsByUserId(dto.getUserId())) {
+            throw new UseridException("아이디가 이미 존재합니다.");  // 아이디 중복
         }
-        //이미 가입된 이메일이 있을경우.
-        if (userRepository.existsByEmail(dto.getEmail())){
-            log.info("이미 존재하는 이메일");
-            throw new UseridException();
+
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new UseridException("이메일이 이미 존재합니다.");  // 닉네임 중복
         }
-        //modelMapper를 이용해서 dto 변환.
+
+        if (userRepository.existsByNickname(dto.getNickname())){
+            throw new UseridException("닉네임이 이미 존재합니다.");
+        }
+
         User user = modelMapper.map(dto, User.class);
-
         user.setUserPw(passwordEncoder.encode(dto.getUserPw()));
         user.addRole(UserRole.USER);
 
@@ -50,6 +47,7 @@ public class UserServiceImpl implements UserService {
 
         return user;
     }
+
 
     @Override
     public User signIn(String id, String pw) {

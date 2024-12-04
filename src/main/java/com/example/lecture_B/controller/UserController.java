@@ -33,7 +33,8 @@ public class UserController {
             //회원가입 한 user 값을 리턴.
             return ResponseEntity.ok(user);
         }catch (UserService.UseridException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원가입중 오류발생.");
+            //예외 메시지에 따라 다른 응답반환.
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 

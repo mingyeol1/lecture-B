@@ -5,7 +5,6 @@ import org.hibernate.annotations.NotFound;
 
 @Data
 public class SignUpDTO {
-    private String username;
     private String userId;
     private String email;
     private String phoneNum;
