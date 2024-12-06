@@ -14,4 +14,6 @@ public interface UserService {
     User signUp (SignUpDTO dto) throws UseridException;
 
     User signIn (String id, String pw);
+
+    User userDetail (String id);
 }

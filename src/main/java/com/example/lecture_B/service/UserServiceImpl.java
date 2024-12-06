@@ -12,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -36,7 +37,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (userRepository.existsByNickname(dto.getNickname())){
-            throw new UseridException("닉네임이 이미 존재합니다.");
+            throw new UseridException("닉네임이 이미 존재합니다.");    //이메일 중복
         }
 
         User user = modelMapper.map(dto, User.class);
@@ -64,6 +65,21 @@ public class UserServiceImpl implements UserService {
         } else {
             log.info("존재하지 않는 아이디.");
             return null;
+        }
+    }
+
+    @Override
+    public User userDetail(String id) {
+        Optional<User> result = userRepository.findByUserId(id);
+
+
+        if (result.isPresent()){
+            User user = result.get();
+            log.info("user-----------------------------------------");
+            log.info(user);
+            return user;
+        }else {
+            throw new NoSuchElementException("비어있음");
         }
 
     }

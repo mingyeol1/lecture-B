@@ -36,6 +36,11 @@ dependencies {
 
 	//modelmapper
 	implementation 'org.modelmapper:modelmapper:3.2.0'
+
+	// JWT를 사용하기 위한 라이브러리
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+	implementation 'io.jsonwebtoken:jjwt-gson:0.12.5'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.12.5'
 }
 
 tasks.named('test') {

@@ -1,5 +1,7 @@
 package com.example.lecture_B.security;
 
+import com.example.lecture_B.entity.CustomUser;
+import com.example.lecture_B.entity.User;
 import com.example.lecture_B.repository.UserRepository;
 import com.example.lecture_B.service.UserService;
 import jakarta.transaction.Transactional;
@@ -7,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -29,12 +32,34 @@ public class CustomUserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
 
         //DB에서 userID가 들어있는 행 찾기.
-       var result = userRepository.findByUserId(userId);
+       Optional<User> result = userRepository.findByUserId(userId);
 
-       var user = result.get();
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("USER"));
-        return new User(user.getUserId(), user.getUserPw(), authorities);
+       //ID값이 없는경우 예외처리
+        if (result.isEmpty()){
+            throw new UsernameNotFoundException("유저가 존재하지 않음.");
+        }
+
+        User user = result.get();
+
+        if (user.getUserRole().isEmpty()){
+            throw new UsernameNotFoundException("유저의 권한이 존재하지 않음.");
+        }
+
+        CustomUser customUser = new CustomUser(
+                user.getUserId(),
+                user.getUserPw(),
+                user.getNickname(),
+                user.getEmail(),
+                user.isDel(),
+                user.getUserRole()
+                        .stream()
+                        .map(userRole -> new SimpleGrantedAuthority("ROLE_" + userRole.name()))
+                        .collect(Collectors.toList())
+        );
+
+        log.info("커스텀 유저 정보 : " + customUser);
+
+        return customUser;
 
     }
 }

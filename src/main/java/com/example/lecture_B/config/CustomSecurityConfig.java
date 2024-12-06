@@ -3,6 +3,7 @@ package com.example.lecture_B.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -21,6 +22,12 @@ public class CustomSecurityConfig {
                         .anyRequest().permitAll() // 모든 요청 허용
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())); // CORS 설정
+
+
+        //로그인시 세션데이터 생성x
+        http.sessionManagement((session) -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
 
         return http.build();
     }
