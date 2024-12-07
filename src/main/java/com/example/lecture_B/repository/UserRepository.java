@@ -1,5 +1,6 @@
 package com.example.lecture_B.repository;
 
+import com.example.lecture_B.dto.TokenDTO;
 import com.example.lecture_B.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -17,4 +18,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     //이미 닉네임이 가입되어 있는경우
     boolean existsByNickname(String nickname);
+
+
 }

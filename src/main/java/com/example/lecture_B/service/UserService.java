@@ -1,6 +1,7 @@
 package com.example.lecture_B.service;
 
 import com.example.lecture_B.dto.SignUpDTO;
+import com.example.lecture_B.dto.TokenDTO;
 import com.example.lecture_B.entity.User;
 
 public interface UserService {
@@ -16,4 +17,7 @@ public interface UserService {
     User signIn (String id, String pw);
 
     User userDetail (String id);
+
+    // refreshToken 토큰 검증 및  accessToken 재발급 받는 메서드
+    TokenDTO tokenReissue(String refreshToken);
 }

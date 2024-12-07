@@ -21,9 +21,7 @@ public class CustomUser extends User {
     private boolean del;
 
     public CustomUser(String username, String password, String email, String nickname, boolean del,
-             Collection<? extends GrantedAuthority> authorities
-
-                      ) {
+             Collection<? extends GrantedAuthority> authorities) {
         super(username, password, authorities);
         this.userId = username;
         this.userPw = password;

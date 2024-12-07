@@ -41,8 +41,22 @@ public class CustomUserDetailService implements UserDetailsService {
 
         User user = result.get();
 
+        // ROLE 역할이 비어있는지 확인.
         if (user.getUserRole().isEmpty()){
             throw new UsernameNotFoundException("유저의 권한이 존재하지 않음.");
+        }
+
+        // 권한을 SimpleGrantedAuthority로 변환
+        // 사용자의 역할을 SimpleGrantedAuthority로 변환하여 Spring Security의 권한 시스템과 통합
+        List<SimpleGrantedAuthority> authorities;
+        try {
+            authorities = user.getUserRole().stream()
+                    .peek(role -> log.info("유저한테 할당된 권한: ROLE_" +role))
+                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error converting roles to authorities", e);
+            throw new UsernameNotFoundException("Cannot convert roles to authorities", e);
         }
 
         CustomUser customUser = new CustomUser(
@@ -51,10 +65,7 @@ public class CustomUserDetailService implements UserDetailsService {
                 user.getNickname(),
                 user.getEmail(),
                 user.isDel(),
-                user.getUserRole()
-                        .stream()
-                        .map(userRole -> new SimpleGrantedAuthority("ROLE_" + userRole.name()))
-                        .collect(Collectors.toList())
+                authorities
         );
 
         log.info("커스텀 유저 정보 : " + customUser);

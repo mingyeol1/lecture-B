@@ -2,9 +2,11 @@ package com.example.lecture_B.service;
 
 
 import com.example.lecture_B.dto.SignUpDTO;
+import com.example.lecture_B.dto.TokenDTO;
 import com.example.lecture_B.entity.User;
 import com.example.lecture_B.entity.UserRole;
 import com.example.lecture_B.repository.UserRepository;
+import com.example.lecture_B.util.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -12,6 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -24,6 +27,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Override
     public User signUp(SignUpDTO dto) throws UseridException {
@@ -79,8 +83,20 @@ public class UserServiceImpl implements UserService {
             log.info(user);
             return user;
         }else {
-            throw new NoSuchElementException("비어있음");
+            throw new NoSuchElementException("비어있음 : " + id);
         }
 
+    }
+
+    @Override
+    public TokenDTO tokenReissue(String refreshToken) {
+
+        Map<String, Object> claims = jwtUtil.validateToken(refreshToken);
+
+        String email = (String) claims.get("email");
+
+        String newAccessToken = jwtUtil.generateToken(Map.of("email", email), 1); // 30분 유효
+
+        return new TokenDTO(newAccessToken, refreshToken);
     }
 }
