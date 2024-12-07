@@ -54,10 +54,11 @@ public class TokenCheckFilter extends OncePerRequestFilter {    // OncePerReques
         try {
             Map<String, Object> payload = validateAccessToken(request);
 
-            // email
+            // userId를 추출 > jwt 클레임 데이터에 포함된 사용자 식별자.
             String userId = (String) payload.get("userId");
             log.info("userId : " + userId);
 
+            //userId 기반으로 사용자 정보 가져옴.
             UserDetails userDetails = customUserDetailService.loadUserByUsername(userId);
 
             // 등록 사용자 인증 정보 생성
@@ -65,9 +66,13 @@ public class TokenCheckFilter extends OncePerRequestFilter {    // OncePerReques
                     new UsernamePasswordAuthenticationToken(
                             userDetails, userDetails.getPassword(), userDetails.getAuthorities()
                     );
+
+            //Spring Security의 SecurityContext에 인증 정보를 저장하여 요청 처리 중 인증 상태를 유지
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             filterChain.doFilter(request, response);
+
+            //토큰이 유효하지 않은 경우 예외를 처리
         } catch (AccessTokenException accessTokenException) {
             accessTokenException.sendResponseError(response);
             log.error("accessToken error" + accessTokenException);
@@ -91,17 +96,21 @@ public class TokenCheckFilter extends OncePerRequestFilter {    // OncePerReques
 
         // Bearer 생략
         String tokenType = headerStr.substring(0, 6);
-        String tokenStr = headerStr.substring(7);
+        String tokenStr = headerStr.substring(7);  //Bearer를 제외한 실제 토큰 값
 
         // 타입이 Bearer인지 확인하고 올바르지 않으면 BADTYPE 예외를 던짐
         if(tokenType.equalsIgnoreCase("Bearer") == false) {
             throw new AccessTokenException(AccessTokenException.TOKEN_ERROR.BADTYPE);
         }
 
+        //토큰 유효성검사.
+        //추출한 토큰 값을 JwtUtil.validateToken 메서드로 전달하여 토큰의 서명값 및 만료여부 등을 검증.
         try {
             Map<String, Object> values = jwtUtil.validateToken(tokenStr);
 
             return values;
+
+            //값이 유효하지 않으면 예외처리.
         } catch (MalformedJwtException malformedJwtException) {
             log.info("MalformedJwtException-----------------------");
             throw new AccessTokenException(AccessTokenException.TOKEN_ERROR.MALFORM);

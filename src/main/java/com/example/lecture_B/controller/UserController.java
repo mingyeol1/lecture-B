@@ -1,131 +1,30 @@
 package com.example.lecture_B.controller;
 
-import com.example.lecture_B.dto.SignUpDTO;
 import com.example.lecture_B.dto.TokenDTO;
-import com.example.lecture_B.dto.UserDTO;
-import com.example.lecture_B.entity.RefreshToken;
 import com.example.lecture_B.entity.User;
 import com.example.lecture_B.repository.RefreshTokenRepository;
-import com.example.lecture_B.repository.UserRepository;
-import com.example.lecture_B.security.CustomUserDetailService;
 import com.example.lecture_B.security.filter.excption.UserNotFoundException;
-import com.example.lecture_B.util.JwtUtil;
+import com.example.lecture_B.service.UserService;
 import io.jsonwebtoken.JwtException;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import com.example.lecture_B.service.UserService;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 
 @RestController
-@Log4j2
 @RequiredArgsConstructor
-@RequestMapping("/api/auth")
+@Log4j2
+@RequestMapping("/api/user")
 public class UserController {
 
     private final UserService userService;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final CustomUserDetailService customUserDetailService;
-    private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    @PostMapping("signUp")
-    public ResponseEntity<?> signUp(@RequestBody SignUpDTO signUpDTO){
-        try {
-            User user = userService.signUp(signUpDTO);
-            //회원가입 한 user 값을 리턴.
-            return ResponseEntity.ok(user);
-        }catch (UserService.UseridException e){
-            //예외 메시지에 따라 다른 응답반환.
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
-
-    @GetMapping("/signIn")
-    public void getSignIn(){
-        log.info("로그인 접근");
-    }
-
-
-    @RequestMapping(value = "/signIn", method = RequestMethod.POST)
-    public ResponseEntity<?> signin(@RequestBody SignUpDTO dto) {
-        log.info(dto.getUserId());
-
-        // AuthService를 사용하여 사용자의 인증을 시도
-        User user = userService.signIn(dto.getUserId(), dto.getUserPw());
-
-        // 사용자가 존재하는 경우
-        if (user != null) {
-            // 사용자의 이메일을 기반으로 UserDetails를 가져옴
-            UserDetails userDetails = customUserDetailService.loadUserByUsername(dto.getUserId());
-
-            // 토큰 생성
-            // UsernamePasswordAuthenticationToken, UserId=Principal, Password=Credential 역할을 함
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(), userDetails.getAuthorities());
-
-            // SecurityContextHolder에 인증을 설정
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
-            // JWT Payload에 userId, userName, email, roles 값을 실어서 보냄
-            Map<String, Object> claim = new HashMap<>();
-            claim.put("userId", user.getUserId());
-            claim.put("nickname", user.getNickname());
-            claim.put("phoneNum", user.getPhoneNum());
-            claim.put("email", user.getEmail());
-            claim.put("roles", userDetails.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList()));
-
-            String accessToken = jwtUtil.generateToken(claim, 1);
-            String refreshToken = jwtUtil.generateToken(claim, 30);
-
-            Optional<RefreshToken> existingRefreshToken = refreshTokenRepository.findByUserId(userDetails.getUsername());
-
-            if (existingRefreshToken.isPresent()) {
-                RefreshToken firstRefreshToken = existingRefreshToken.get();
-                firstRefreshToken.setToken(refreshToken);
-                refreshTokenRepository.save(firstRefreshToken);
-            } else {
-                RefreshToken newRefreshToken = new RefreshToken();
-                newRefreshToken.setToken(refreshToken);
-                newRefreshToken.setUserId(userDetails.getUsername());
-                refreshTokenRepository.save(newRefreshToken);
-            }
-
-            Map<String, String> tokens = Map.of("accessToken", accessToken, "refreshToken", refreshToken);
-
-            // ok()에 클라이언트에게 반환할 토큰을 포함
-            // ResponseEntity나 @ResponseBody 어노테이션을 사용하면 스프링은 기본적으로 데이터를 JSON 형식으로 변환하여 클라이언트에게 응답함.
-            // 결론은 클라이언트는 JSON 형식으로 데이터를 받게 됨ㅁ
-            return ResponseEntity.ok(tokens);
-        }else {
-            Map<String, String> errorReponse = new HashMap<>();
-            errorReponse.put("error", "아이디나 비밀번호가 맞지 않습니다.");
-
-            // 401에러 발생
-            return ResponseEntity.status(401).body(errorReponse);
-        }
-    }
-
-
-    @PreAuthorize("hasRole('USER')")
     @GetMapping("modify")
     public ResponseEntity<?> getUserDetail(){
 
@@ -190,5 +89,4 @@ public class UserController {
 
         return ResponseEntity.ok("Logout successful");
     }
-
 }
