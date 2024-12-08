@@ -73,8 +73,7 @@ public class JwtUtil {
 //                   .getBody();                             // 클레임 반환
 
             Claims claims = Jwts.parser()
-                    .verifyWith(Keys.hmacShaKeyFor(key.getBytes()))
-                    .build()
+                    .verifyWith(Keys.hmacShaKeyFor(key.getBytes())).build()
                     .parseSignedClaims(token)
                     .getPayload();
             return new HashMap<>(claims);
