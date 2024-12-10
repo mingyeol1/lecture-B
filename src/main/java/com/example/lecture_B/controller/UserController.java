@@ -1,20 +1,28 @@
 package com.example.lecture_B.controller;
 
+import com.example.lecture_B.dto.ModifyDTO;
 import com.example.lecture_B.dto.TokenDTO;
+import com.example.lecture_B.dto.UserDTO;
 import com.example.lecture_B.entity.User;
 import com.example.lecture_B.repository.RefreshTokenRepository;
+import com.example.lecture_B.repository.UserRepository;
 import com.example.lecture_B.security.filter.excption.UserNotFoundException;
+import com.example.lecture_B.service.S3Service;
 import com.example.lecture_B.service.UserService;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,6 +32,9 @@ public class UserController {
 
     private final UserService userService;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final S3Service s3Service;
+    private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
 
     @GetMapping("modify")
     public ResponseEntity<?> getUserDetail(){
@@ -89,4 +100,36 @@ public class UserController {
 
         return ResponseEntity.ok("Logout successful");
     }
+
+    @GetMapping("/getModify")
+    public ResponseEntity<?> modify() {
+        log.info("modify..........................");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = authentication.getPrincipal();
+        log.info(principal);
+        log.info(authentication.getName());
+        log.info(authentication.getAuthorities());
+
+        User detail = userService.userDetail(authentication.getName());
+        log.info(detail);
+
+        return ResponseEntity.ok(detail);
+    }
+
+
+    @PutMapping("/modify")
+    public ResponseEntity<?> modifyPost(@RequestBody ModifyDTO dto) {
+        log.info("modifyPost..........................");
+        log.info("memberJoinDTO.........................." + dto);
+
+        try {
+            userService.modify(dto);
+            return ResponseEntity.ok("회원정보 수정이 완료되었습니다.");
+        } catch (UserService.UseridException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+
+
 }

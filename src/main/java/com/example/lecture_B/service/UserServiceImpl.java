@@ -1,8 +1,10 @@
 package com.example.lecture_B.service;
 
 
+import com.example.lecture_B.dto.ModifyDTO;
 import com.example.lecture_B.dto.SignUpDTO;
 import com.example.lecture_B.dto.TokenDTO;
+import com.example.lecture_B.dto.UserDTO;
 import com.example.lecture_B.entity.User;
 import com.example.lecture_B.entity.UserRole;
 import com.example.lecture_B.repository.UserRepository;
@@ -71,6 +73,55 @@ public class UserServiceImpl implements UserService {
             return null;
         }
     }
+
+
+    @Override
+    public void modify(ModifyDTO modifyDTO) throws UseridException {
+        log.info("회원정보를 수정하겠음----------------------------------.");
+
+        Optional<User> optionalMember = userRepository.findByUserId(modifyDTO.getUserId());
+        if (optionalMember.isPresent()) {
+            User user = optionalMember.get();
+
+            // 현재 유저의 닉네임과 이메일을 제외하고 중복 검사
+            // 소셜로그인시 수정하면 nullPointerException 때문에 member.getMnick() != null 를 넣어줌.
+            if (user.getNickname() != null && !user.getNickname().equals(modifyDTO.getNickname()) && userRepository.existsByNickname(modifyDTO.getNickname())) {
+                log.info("이미 있는 닉네임");
+                throw new UseridException("이미 있는 닉네임");
+            }
+
+            if (!user.getEmail().equals(modifyDTO.getEmail()) && userRepository.existsByEmail(modifyDTO.getEmail())){
+                log.info("이미 있는 이메일");
+                throw new UseridException("이미 있는 이메일");
+            }
+
+            // 기존 비밀번호를 임시로 저장
+            String existingPassword = user.getUserPw();
+
+            // DTO의 데이터를 엔티티에 매핑
+            modelMapper.map(modifyDTO, user);
+
+            // 비밀번호가 비어 있거나 기존 비밀번호와 같으면 기존 비밀번호 유지
+            if (modifyDTO.getUserPw() == null || modifyDTO.getUserPw().isEmpty() || passwordEncoder.matches(modifyDTO.getUserPw(), existingPassword)) {
+                user.setUserPw(existingPassword);
+            } else {
+                // 새 비밀번호를 인코딩하여 저장
+                user.setUserPw(passwordEncoder.encode(modifyDTO.getUserPw()));
+            }
+
+            log.info("회원정보를 수정했음 ->" + user);
+
+            userRepository.save(user);
+        } else {
+            log.info("회원 정보를 찾을 수 없음: ID=" + modifyDTO.getUserId());
+            throw new RuntimeException("회원정보가 없는데요?");
+        }
+    }
+
+
+
+
+
 
     @Override
     public User userDetail(String id) {
