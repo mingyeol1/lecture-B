@@ -87,12 +87,12 @@ public class UserServiceImpl implements UserService {
             // 소셜로그인시 수정하면 nullPointerException 때문에 member.getMnick() != null 를 넣어줌.
             if (user.getNickname() != null && !user.getNickname().equals(modifyDTO.getNickname()) && userRepository.existsByNickname(modifyDTO.getNickname())) {
                 log.info("이미 있는 닉네임");
-                throw new UseridException("이미 있는 닉네임");
+                throw new UseridException("닉네임이 이미 존재합니다.");
             }
 
             if (!user.getEmail().equals(modifyDTO.getEmail()) && userRepository.existsByEmail(modifyDTO.getEmail())){
                 log.info("이미 있는 이메일");
-                throw new UseridException("이미 있는 이메일");
+                throw new UseridException("이메일이 이미 존재합니다.");
             }
 
             // 기존 비밀번호를 임시로 저장
