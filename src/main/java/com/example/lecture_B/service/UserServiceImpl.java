@@ -118,10 +118,17 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public void userRemove(String userId) {
+        log.info("회원을 삭제 하겠음.");
+        log.info(userId);
+        User user = userDetail(userId);
+        user.changeDel(true);
 
+        log.info(userId + "를 삭제하겠음.");
 
-
-
+        userRepository.save(user);
+    }
 
     @Override
     public User userDetail(String id) {

@@ -17,11 +17,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -35,6 +37,7 @@ public class UserController {
     private final S3Service s3Service;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @GetMapping("modify")
     public ResponseEntity<?> getUserDetail(){
@@ -127,6 +130,26 @@ public class UserController {
             return ResponseEntity.ok("회원정보 수정이 완료되었습니다.");
         } catch (UserService.UseridException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/remove")
+    public ResponseEntity<?> remove(@RequestBody Map<String, String> request) {
+        String userPw = request.get("mpw");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+
+        Optional<User> result = userRepository.findByUserId(userId);
+        if (result.isPresent()) {
+            User user = result.get();
+            if (passwordEncoder.matches(userPw, user.getUserPw())) {
+                userService.userRemove(userId);
+                return ResponseEntity.ok("성공적으로 삭제되었습니다.");
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 다릅니다.");
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원 정보가 없음.");
         }
     }
 

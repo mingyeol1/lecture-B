@@ -24,4 +24,6 @@ public interface UserService {
     TokenDTO tokenReissue(String refreshToken);
 
     void modify(ModifyDTO modifyDTO) throws UseridException;
+
+    void userRemove(String userId);
 }
