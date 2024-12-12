@@ -133,6 +133,27 @@ public class UserController {
         }
     }
 
+    @PostMapping("/checkPw")
+    public ResponseEntity<?> checkPw(@RequestBody Map<String, String> request) {
+        String userPw = request.get("userPw");
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+
+        Optional<User> optionalMember = userRepository.findByUserId(userId);
+        if (optionalMember.isPresent()) {
+            User user = optionalMember.get();
+            if (passwordEncoder.matches(userPw, user.getUserPw())) {
+                log.info("비밀번호가 일치");
+                return ResponseEntity.ok("비밀번호가 일치.");
+            } else {
+                log.info("비밀번호가 노일치.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 노일치.");
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원 정보가 없음.");
+        }
+    }
+
     @PostMapping("/remove")
     public ResponseEntity<?> remove(@RequestBody Map<String, String> request) {
         String userPw = request.get("mpw");
