@@ -13,14 +13,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+
 
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -36,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final S3Service s3Service;
 
     @Override
     public User signUp(SignUpDTO dto) throws UseridException {
@@ -153,6 +149,22 @@ public class UserServiceImpl implements UserService {
         }
 
     }
+
+    @Override
+    public UserDTO updateProfileImage(String userId, String imageUrl) {
+        // 현재 회원의 정보를 조회.
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 이미지경로를 저장.
+        user.setProfileImage(imageUrl);
+
+        // 데이터베이스에저장
+        userRepository.save(user);
+
+        // dto를 통한 변환.
+        return modelMapper.map(user, UserDTO.class);
+    }
+
 
     @Override
     public TokenDTO tokenReissue(String refreshToken) {

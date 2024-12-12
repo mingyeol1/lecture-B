@@ -26,4 +26,6 @@ public interface UserService {
     void modify(ModifyDTO modifyDTO) throws UseridException;
 
     void userRemove(String userId);
+
+    UserDTO updateProfileImage(String userId, String imageUrl);
 }

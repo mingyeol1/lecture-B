@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -171,6 +172,24 @@ public class UserController {
             }
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원 정보가 없음.");
+        }
+    }
+
+
+
+    @PostMapping("/{userId}/upload-profile-image")
+    public ResponseEntity<UserDTO> uploadProfileImage(@PathVariable String userId,
+                                                      @RequestPart("file") MultipartFile file) {
+        try {
+            // Upload the image to S3 and get the image URL
+            String imageUrl = s3Service.uploadImage(file);
+
+            // Update the user's profile image and return the updated user as a DTO
+            UserDTO updatedUser = userService.updateProfileImage(userId, imageUrl);
+
+            return ResponseEntity.ok(updatedUser);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
