@@ -167,13 +167,21 @@ public class UserController {
 
 
     @PostMapping("/{userId}/upload-profile-image")
-    public ResponseEntity<UserDTO> uploadProfileImage(@PathVariable String userId,
+    public ResponseEntity<?> uploadProfileImage(@PathVariable String userId,
                                                       @RequestPart("file") MultipartFile file) {
         try {
-            // Upload the image to S3 and get the image URL
+            // 기존 사용자 정보 조회
+            User user = userService.userDetail(userId);
+
+            // 기존 프로필 이미지가 있다면 삭제
+            if (user != null && user.getProfileImage() != null) {
+                s3Service.deleteImage(user.getProfileImage());
+            }
+
+            // 새 이미지를 S3에 업로드하고 URL 받기
             String imageUrl = s3Service.uploadImage(file);
 
-            // Update the user's profile image and return the updated user as a DTO
+            // 사용자의 프로필 이미지 업데이트하고 갱신된 사용자 정보 반환
             UserDTO updatedUser = userService.updateProfileImage(userId, imageUrl);
 
             return ResponseEntity.ok(updatedUser);

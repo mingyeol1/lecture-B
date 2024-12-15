@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
@@ -21,9 +22,23 @@ public class S3Service {
     private String bucket;
     private final S3Client s3Client;
 
-    /**
-     * S3에 이미지 업로드
-     */
+    //S3에서 이미지 삭제
+
+    public void deleteImage(String imageUrl) {
+        if (imageUrl != null && imageUrl.contains(bucket + ".s3.amazonaws.com/")) {
+            // URL에서 키 추출 (예: profile-images/xxx-xxx-xxx.jpg)
+            String key = imageUrl.substring(imageUrl.indexOf(bucket + ".s3.amazonaws.com/")
+                    + (bucket + ".s3.amazonaws.com/").length());
+
+            // S3에서 파일 삭제
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build());
+        }
+    }
+
+    //S3에 이미지 업로드
     public String uploadImage(MultipartFile file) throws IOException {
         // 파일 확장자 추출
         String originalFilename = file.getOriginalFilename();
