@@ -59,14 +59,17 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public User signIn(String id, String pw) {
+    public User signIn(String id, String pw) throws UseridException {
 
         Optional<User> user = userRepository.findByUserId(id);
 
-        if (user.isPresent()){
-            if (passwordEncoder.matches(pw, user.get().getUserPw())){
+        if (user.isPresent()) {
+            if (user.get().isDel()) {
+                log.info("삭제 예정인 아이디.");
+                throw new UseridException("삭제된 아이디입니다.");
+            } else if (passwordEncoder.matches(pw, user.get().getUserPw())) {
                 return user.get();
-            }else {
+            } else {
                 log.info("비밀번호 불일치.");
                 return null;
             }
@@ -74,6 +77,23 @@ public class UserServiceImpl implements UserService {
             log.info("존재하지 않는 아이디.");
             return null;
         }
+
+
+
+
+//        if (user.isPresent()){
+//            if (passwordEncoder.matches(pw, user.get().getUserPw())){
+//                return user.get();
+//            } else {
+//                log.info("비밀번호 불일치.");
+//                return null;
+//            }
+//        } else {
+//            log.info("존재하지 않는 아이디.");
+//            return null;
+//        }
+
+
     }
 
 
@@ -159,6 +179,7 @@ public class UserServiceImpl implements UserService {
         user.setProfileImage(imageUrl);
 
         // 데이터베이스에저장
+
         userRepository.save(user);
 
         // dto를 통한 변환.

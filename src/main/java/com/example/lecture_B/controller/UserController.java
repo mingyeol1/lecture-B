@@ -40,17 +40,6 @@ public class UserController {
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
 
-    @GetMapping("modify")
-    public ResponseEntity<?> getUserDetail(){
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Object principal = authentication.getPrincipal();
-
-        User detail = userService.userDetail(authentication.getName());
-
-        return ResponseEntity.ok(detail);
-    }
-
     @GetMapping("/token")
     public ResponseEntity<?> readToken(@RequestHeader("Authorization") String token) {
         try {
@@ -157,7 +146,7 @@ public class UserController {
 
     @PostMapping("/remove")
     public ResponseEntity<?> remove(@RequestBody Map<String, String> request) {
-        String userPw = request.get("mpw");
+        String userPw = request.get("userPw");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
 

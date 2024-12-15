@@ -11,4 +11,5 @@ public class UserDTO {
     private String nickname;
     private String profileImage;
     private String userRole;
+    private boolean del;
 }
