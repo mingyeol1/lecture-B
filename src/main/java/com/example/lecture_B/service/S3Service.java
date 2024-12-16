@@ -20,7 +20,7 @@ public class S3Service {
 
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
-    private final S3Client s3Client;
+    private final S3Client s3Client; // AWS S3와 통신하기 위한 클라이언트.
 
     //S3에서 이미지 삭제
 
@@ -32,8 +32,8 @@ public class S3Service {
 
             // S3에서 파일 삭제
             s3Client.deleteObject(DeleteObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(key)
+                    .bucket(bucket) // 삭제할 객체가 있는 버킷 이름
+                    .key(key)   // 삭제할 객체의 키(경로)
                     .build());
         }
     }
@@ -52,11 +52,11 @@ public class S3Service {
         // 파일 업로드
         s3Client.putObject(
                 PutObjectRequest.builder()
-                        .bucket(bucket)
-                        .key(s3Path)
+                        .bucket(bucket) // 버킷 이름.
+                        .key(s3Path)    // 저장될 경로와 파일명
                         .contentType(file.getContentType())
                         .build(),
-                software.amazon.awssdk.core.sync.RequestBody.fromBytes(file.getBytes())
+                software.amazon.awssdk.core.sync.RequestBody.fromBytes(file.getBytes())// 실제 파일 데이터
         );
 
         // 업로드된 파일의 S3 URL 반환

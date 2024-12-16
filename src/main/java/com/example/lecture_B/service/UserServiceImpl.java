@@ -192,9 +192,9 @@ public class UserServiceImpl implements UserService {
 
         Map<String, Object> claims = jwtUtil.validateToken(refreshToken);
 
-        String email = (String) claims.get("email");
+        String userId = (String) claims.get("userId");
 
-        String newAccessToken = jwtUtil.generateToken(Map.of("email", email), 1); // 30분 유효
+        String newAccessToken = jwtUtil.generateToken(Map.of("userId", userId), 1); // 30분 유효
 
         return new TokenDTO(newAccessToken, refreshToken);
     }
