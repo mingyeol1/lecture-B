@@ -1,6 +1,7 @@
 package com.example.lecture_B.service;
 
 import com.example.lecture_B.dto.UserDTO;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class S3Service {
 
     @Value("${spring.cloud.aws.s3.bucket}")

@@ -10,6 +10,7 @@ import com.example.lecture_B.security.filter.excption.UserNotFoundException;
 import com.example.lecture_B.service.S3Service;
 import com.example.lecture_B.service.UserService;
 import io.jsonwebtoken.JwtException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
@@ -31,6 +32,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Log4j2
 @RequestMapping("/api/user")
+@Transactional
 public class UserController {
 
     private final UserService userService;
@@ -132,7 +134,7 @@ public class UserController {
     }
 
     @PostMapping("/remove")
-    public ResponseEntity<?> remove(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> remove(@RequestBody Map<String, String> request, String token) {
         String userPw = request.get("userPw");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userId = authentication.getName();
@@ -142,6 +144,9 @@ public class UserController {
             User user = result.get();
             if (passwordEncoder.matches(userPw, user.getUserPw())) {
                 userService.userRemove(userId);
+                //삭제시 DB에서 리프레시토큰이 삭제될 수 있도록 수정.
+//                String refreshToken = token.substring(7);
+                refreshTokenRepository.deleteByUserId(userId);
                 return ResponseEntity.ok("성공적으로 삭제되었습니다.");
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 다릅니다.");

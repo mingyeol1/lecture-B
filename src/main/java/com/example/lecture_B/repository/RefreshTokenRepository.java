@@ -1,6 +1,7 @@
 package com.example.lecture_B.repository;
 
 import com.example.lecture_B.entity.RefreshToken;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,8 +9,9 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
+@Transactional
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
-    void deleteByToken(String token);
+//    void deleteByToken(String token);
 
     @Modifying
     @Query("UPDATE RefreshToken rt SET rt.token = :newToken WHERE rt.userId = :username")

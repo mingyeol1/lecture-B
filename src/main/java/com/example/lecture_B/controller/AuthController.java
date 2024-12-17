@@ -7,6 +7,7 @@ import com.example.lecture_B.repository.RefreshTokenRepository;
 import com.example.lecture_B.repository.UserRepository;
 import com.example.lecture_B.security.CustomUserDetailService;
 import com.example.lecture_B.util.JwtUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 @Log4j2
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
+@Transactional
 public class AuthController {
 
     private final UserService userService;
@@ -127,11 +129,14 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String token) {
         log.info("logout token(successToken) : " + token);
+
+
+  // 굳이 로그아웃할 때 디비값을 건드릴 필요가 있을까 싶어 주석. 허나 회원 탈퇴시에는 값을 삭제하도록 수정.
         // "Bearer " 부분 제거 - 토큰 값이 "Bearer ${accessToken}" 이 방식으로 들어가기 때문
-        String refreshToken = token.substring(7);
-        log.info("refreshToken : " + refreshToken);
-        // Refresh Token 삭제
-        refreshTokenRepository.deleteByToken(refreshToken);
+//        String refreshToken = token.substring(7);
+//        log.info("refreshToken : " + refreshToken);
+//        // Refresh Token 삭제
+//        refreshTokenRepository.deleteByToken(refreshToken);
         // SecurityContextHolder 초기화
         SecurityContextHolder.clearContext();
 
