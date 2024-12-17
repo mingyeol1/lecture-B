@@ -1,15 +1,13 @@
 package com.example.lecture_B.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+@Builder
 @Entity
 @Data
 @AllArgsConstructor
@@ -31,7 +29,9 @@ public class User {
     private String profileImage;
     private boolean del;
 
-    @Enumerated(EnumType.STRING)
+    @ElementCollection(fetch = FetchType.LAZY)
+    @Builder.Default
+    @ToString.Exclude
     private Set<UserRole> userRole = new HashSet<>(); // Enum: ADMIN, USER, ANA
 
     private LocalDateTime createdAt = LocalDateTime.now();
