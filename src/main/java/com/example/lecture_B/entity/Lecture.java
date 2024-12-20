@@ -14,7 +14,7 @@ public class Lecture {
 
     @Column(length = 255, nullable = false)
     private String title; // 강의 제목
-    @Column(length = 255, nullable = false)
+    @Column(length = 1000000, nullable = false)
     private String description; // 강의 설명
 
     private String videoUrl; // 강의 영상 URL
@@ -23,11 +23,11 @@ public class Lecture {
 
     @ManyToOne
     @JoinColumn(name = "board_id", nullable = false) // 게시판 ID와 연관
-    private Board board;
+    private Board boardId;
 
     @ManyToOne
-    @JoinColumn(name = "uploader_id", nullable = false) // 업로더 ID와 연관
-    private User uploader;
+    @JoinColumn(name = "user_id", nullable = false) // 업로더 ID와 연관
+    private User userId;
 
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;
