@@ -29,6 +29,6 @@ public class Lecture {
     @JoinColumn(name = "user_id", nullable = false) // 업로더 ID와 연관
     private User userId;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime updatedAt;
+    private LocalDateTime createdAt = LocalDateTime.now();  //강의 업로드 날짜
+    private LocalDateTime updatedAt;                        //수정 날짜.
 }
