@@ -16,6 +16,8 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
+
+    //프로포티즈에서 가져온 값.
     @Value("${spring.jwt.secret}")
     private String key;
 
