@@ -19,6 +19,7 @@ public class BoardController {
 
     @PostMapping
     public ResponseEntity<?> createBoard(@RequestBody BoardDTO dto) {
+        //추후 ADMIN만 게시판 생성을 할 수 있게 수정.
         try {
              boardService.createBoard(dto);
              return ResponseEntity.ok("성공적으로 게시판이 생성되었습니다." + dto);
