@@ -42,6 +42,7 @@ public class UserController {
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
 
+    //토큰값이 제대로 있는지 확인.
     @GetMapping("/token")
     public ResponseEntity<?> readToken(@RequestHeader("Authorization") String token) {
         try {

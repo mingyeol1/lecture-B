@@ -31,7 +31,6 @@ public class UserServiceImpl implements UserService {
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final S3Service s3Service;
 
     @Override
     public User signUp(SignUpDTO dto) throws UseridException {
@@ -48,10 +47,14 @@ public class UserServiceImpl implements UserService {
             throw new UseridException("닉네임이 이미 존재합니다.");    //이메일 중복
         }
 
-        User user = modelMapper.map(dto, User.class);
-        user.setUserPw(passwordEncoder.encode(dto.getUserPw()));
-        user.addRole(UserRole.USER);
 
+        // SignUpDTO와 User 클래스 매핑.
+        User user = modelMapper.map(dto, User.class);
+        //패스워드 인코딩.
+        user.setUserPw(passwordEncoder.encode(dto.getUserPw()));
+        //USER권한 부여
+        user.addRole(UserRole.USER);
+        //저장.
         userRepository.save(user);
 
         return user;
@@ -60,9 +63,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User signIn(String id, String pw) throws UseridException {
-
+        //유저가 없는지 있는지 확인.
         Optional<User> user = userRepository.findByUserId(id);
 
+        //del이 true면?
         if (user.isPresent()) {
             if (user.get().isDel()) {
                 log.info("삭제 예정인 아이디.");
@@ -101,12 +105,13 @@ public class UserServiceImpl implements UserService {
     public void modify(ModifyDTO modifyDTO) throws UseridException {
         log.info("회원정보를 수정하겠음----------------------------------.");
 
-        Optional<User> optionalMember = userRepository.findByUserId(modifyDTO.getUserId());
-        if (optionalMember.isPresent()) {
-            User user = optionalMember.get();
+        //계정이 있는지 확인.
+        Optional<User> optionalUser = userRepository.findByUserId(modifyDTO.getUserId());
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
 
             // 현재 유저의 닉네임과 이메일을 제외하고 중복 검사
-            // 소셜로그인시 수정하면 nullPointerException 때문에 member.getMnick() != null 를 넣어줌.
+            // 소셜로그인시 수정하면 nullPointerException 때문에 User.getNickname() != null 를 넣어줌.
             if (user.getNickname() != null && !user.getNickname().equals(modifyDTO.getNickname()) && userRepository.existsByNickname(modifyDTO.getNickname())) {
                 log.info("이미 있는 닉네임");
                 throw new UseridException("닉네임이 이미 존재합니다.");
@@ -118,14 +123,14 @@ public class UserServiceImpl implements UserService {
             }
 
             // 기존 비밀번호를 임시로 저장
-            String existingPassword = user.getUserPw();
+            String existingPw = user.getUserPw();
 
             // DTO의 데이터를 엔티티에 매핑
             modelMapper.map(modifyDTO, user);
 
             // 비밀번호가 비어 있거나 기존 비밀번호와 같으면 기존 비밀번호 유지
-            if (modifyDTO.getUserPw() == null || modifyDTO.getUserPw().isEmpty() || passwordEncoder.matches(modifyDTO.getUserPw(), existingPassword)) {
-                user.setUserPw(existingPassword);
+            if (modifyDTO.getUserPw() == null || modifyDTO.getUserPw().isEmpty() || passwordEncoder.matches(modifyDTO.getUserPw(), existingPw)) {
+                user.setUserPw(existingPw);
             } else {
                 // 새 비밀번호를 인코딩하여 저장
                 user.setUserPw(passwordEncoder.encode(modifyDTO.getUserPw()));
@@ -153,7 +158,7 @@ public class UserServiceImpl implements UserService {
     }
 
 
-
+    //유저의 상세 정보를 나타내는 메서드.
     @Override
     public User userDetail(String id) {
         Optional<User> result = userRepository.findByUserId(id);

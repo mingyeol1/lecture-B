@@ -13,5 +13,5 @@ public class SignUpDTO {
     private String nickname;
     private String profileImage;
     private String userRole;
-    private String userPw;  // 비밀번호 필드
+    private String userPw;  // 가입할 땐 비밀번호 필드추가.
 }

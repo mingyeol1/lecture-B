@@ -2,10 +2,12 @@ package com.example.lecture_B.repository;
 
 import com.example.lecture_B.dto.TokenDTO;
 import com.example.lecture_B.entity.User;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
+@Transactional
 public interface UserRepository extends JpaRepository<User, Long> {
 
 

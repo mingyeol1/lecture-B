@@ -13,5 +13,5 @@ public class ModifyDTO {
     private String nickname;
     private String profileImage;
     private String userRole;
-    private String userPw;  // 비밀번호 필드
+    private String userPw;  // 비밀번호 변경시 필요한 필드 추가.
 }
