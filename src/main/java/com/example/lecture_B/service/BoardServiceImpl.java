@@ -30,16 +30,17 @@ public class BoardServiceImpl implements BoardService {
     //생성된 게시판 조회.
     @Override
     public Board getBoard(Long boardId) {
-        return null;
+        return boardRepository.findById(boardId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시판"));
     }
 
+    //모든 게시판 조회
     @Override
     public List<Board> getAllBoards() {
-        return List.of();
+        return boardRepository.findAll();
     }
 
     @Override
     public void deleteBoard(Long boardId) {
-
+        boardRepository.deleteById(boardId);
     }
 }

@@ -6,10 +6,9 @@ import com.example.lecture_B.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,5 +25,21 @@ public class BoardController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
+    }
+    //id 값으로 게시판 조회
+    @GetMapping("/{boardId}")
+    public ResponseEntity<Board> getBoardById(@PathVariable Long boardId) {
+        return ResponseEntity.ok(boardService.getBoard(boardId));
+    }
+    //모든 게시판 조회.
+    @GetMapping
+    public ResponseEntity<List<Board>> getAllBoards() {
+        return ResponseEntity.ok(boardService.getAllBoards());
+    }
+    //id값으로 게시판 삭제.
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<String> deleteBoard(@PathVariable Long boardId) {
+        boardService.deleteBoard(boardId);
+        return ResponseEntity.ok("게시판 삭제 성공");
     }
 }
