@@ -60,7 +60,8 @@ public class CustomUserDetailService implements UserDetailsService {
         }
 
         CustomUser customUser = new CustomUser(
-                user.getUserId(),
+                user.getId(),       //데이터베이스 고유 ID
+                user.getUserId(),   //사용자 로그인ID
                 user.getUserPw(),
                 user.getNickname(),
                 user.getEmail(),

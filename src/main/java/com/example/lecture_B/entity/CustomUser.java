@@ -14,15 +14,17 @@ import java.util.Collection;
 @ToString
 public class CustomUser extends User {
 
+    private Long id;
     private String userId;
     private String userPw;
     private String nickname;
     private String email;
     private boolean del;
 
-    public CustomUser(String username, String password, String email, String nickname, boolean del,
+    public CustomUser(Long id,String username, String password, String email, String nickname, boolean del,
              Collection<? extends GrantedAuthority> authorities) {
         super(username, password, authorities);
+        this.id = id;   //식별자로 나중에 추가했음.
         this.userId = username;
         this.userPw = password;
         this.nickname = nickname;

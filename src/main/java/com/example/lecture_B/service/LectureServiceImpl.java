@@ -11,10 +11,13 @@ import com.example.lecture_B.repository.LectureRepository;
 import com.example.lecture_B.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -47,8 +50,20 @@ public class LectureServiceImpl implements LectureService {
         return lectureRepository.findByBoardId(boardId);
     }
 
-    // 강의 삭제
-    public void deleteLecture(Long lectureId) {
+    public void deleteLecture(Long lectureId, Long userId) {
+        // 강의 조회
+        Lecture lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다.: " + lectureId));
+
+        // 강의를 올린 사용자의 ID 확인
+        Long uploaderId = lecture.getUser().getId();
+
+        // 현재 사용자 ID와 비교
+        if (!uploaderId.equals(userId)) {
+            throw new RuntimeException("유저가 달라 지울 권한이 없습니다.");
+        }
+
+        // 강의 삭제
         lectureRepository.deleteById(lectureId);
     }
 }

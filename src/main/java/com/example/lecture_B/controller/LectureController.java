@@ -39,8 +39,17 @@ public class LectureController {
     }
 
     @DeleteMapping("/{lectureId}")
-    public ResponseEntity<String> deleteLecture(@PathVariable Long lectureId) {
-        lectureService.deleteLecture(lectureId);
-        return ResponseEntity.ok("강의 삭제 성공.");
+    public ResponseEntity<?> deleteLecture(@PathVariable Long lectureId, @AuthenticationPrincipal CustomUser currentUser) {
+        try {
+            // 현재 유저 ID 추출
+            Long currentUserId = currentUser.getId();
+
+            // 강의 삭제 요청
+            lectureService.deleteLecture(lectureId, currentUserId);
+
+            return ResponseEntity.ok("강의가 성공적으로 삭제되었습니다.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
     }
 }

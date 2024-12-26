@@ -17,7 +17,7 @@ public interface LectureService {
     public List<Lecture> getLectures(Long boardId);
 
     //강의 삭제
-    public void deleteLecture(Long lectureId);
+    public void deleteLecture(Long lectureId,Long userId);
 
 
 }
