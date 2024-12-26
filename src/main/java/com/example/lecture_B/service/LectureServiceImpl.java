@@ -14,6 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,5 +40,15 @@ public class LectureServiceImpl implements LectureService {
 
         lectureRepository.save(lecture);
         return lecture;
+    }
+
+    // 게시판 내 강의 목록 조회
+    public List<Lecture> getLectures(Long boardId) {
+        return lectureRepository.findByBoardId(boardId);
+    }
+
+    // 강의 삭제
+    public void deleteLecture(Long lectureId) {
+        lectureRepository.deleteById(lectureId);
     }
 }

@@ -12,6 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/lectures")
@@ -29,5 +31,16 @@ public class LectureController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("강의 생성 실패: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/board/{boardId}")
+    public ResponseEntity<List<Lecture>> getLecturesByBoardId(@PathVariable Long boardId) {
+        return ResponseEntity.ok(lectureService.getLectures(boardId));
+    }
+
+    @DeleteMapping("/{lectureId}")
+    public ResponseEntity<String> deleteLecture(@PathVariable Long lectureId) {
+        lectureService.deleteLecture(lectureId);
+        return ResponseEntity.ok("강의 삭제 성공.");
     }
 }
