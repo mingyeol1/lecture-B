@@ -5,13 +5,15 @@ import com.example.lecture_B.dto.LectureResponseDTO;
 import com.example.lecture_B.entity.CustomUser;
 import com.example.lecture_B.entity.Lecture;
 import com.example.lecture_B.entity.User;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface LectureService {
 
     //특정 게시판에 게시글 등록
-    public Lecture createLecture(LectureRequestDTO dto, Long boardId, CustomUser user);
+    public Lecture createLecture(LectureRequestDTO dto, Long boardId, CustomUser customUser, List<String> imageUrls, String videoUrl);
 
     //게시판 내 강의 목록 조회
     public List<Lecture> getLectures(Long boardId);

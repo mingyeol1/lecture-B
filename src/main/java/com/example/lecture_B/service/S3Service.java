@@ -13,6 +13,8 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -24,23 +26,8 @@ public class S3Service {
     private String bucket;
     private final S3Client s3Client; // AWS S3와 통신하기 위한 클라이언트.
 
-    //S3에서 이미지 삭제
 
-    public void deleteImage(String imageUrl) {
-        if (imageUrl != null && imageUrl.contains(bucket + ".s3.amazonaws.com/")) {
-            // URL에서 키 추출 (예: profile-images/xxx-xxx-xxx.jpg)
-            String key = imageUrl.substring(imageUrl.indexOf(bucket + ".s3.amazonaws.com/")
-                    + (bucket + ".s3.amazonaws.com/").length());
-
-            // S3에서 파일 삭제
-            s3Client.deleteObject(DeleteObjectRequest.builder()
-                    .bucket(bucket) // 삭제할 객체가 있는 버킷 이름
-                    .key(key)   // 삭제할 객체의 키(경로)
-                    .build());
-        }
-    }
-
-    //S3에 이미지 업로드
+    //S3에 프로필 이미지 업로드
     public String uploadImage(MultipartFile file) throws IOException {
         // 파일 확장자 추출
         String originalFilename = file.getOriginalFilename();
@@ -64,4 +51,79 @@ public class S3Service {
         // 업로드된 파일의 S3 URL 반환
         return "https://" + bucket + ".s3.amazonaws.com/" + s3Path;
     }
-}
+
+    //S3에서 이미지 삭제
+
+    public void deleteImage(String imageUrl) {
+        if (imageUrl != null && imageUrl.contains(bucket + ".s3.amazonaws.com/")) {
+            // URL에서 키 추출 (예: profile-images/xxx-xxx-xxx.jpg)
+            String key = imageUrl.substring(imageUrl.indexOf(bucket + ".s3.amazonaws.com/")
+                    + (bucket + ".s3.amazonaws.com/").length());
+
+            // S3에서 파일 삭제
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(bucket) // 삭제할 객체가 있는 버킷 이름
+                    .key(key)   // 삭제할 객체의 키(경로)
+                    .build());
+        }
+    }
+
+
+
+        // 이미지 다중 업로드
+        public List<String> uploadImages(List<MultipartFile> files) throws IOException {
+            List<String> imageUrls = new ArrayList<>();
+
+            for (MultipartFile file : files) {
+                // 파일 확장자 추출
+                String originalFilename = file.getOriginalFilename();
+                String extension = originalFilename != null && originalFilename.contains(".")
+                        ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                        : "";
+
+                // S3에 저장할 파일 경로
+                String s3Path = "lecture-images/" + UUID.randomUUID() + extension;
+
+                // 파일 업로드
+                s3Client.putObject(
+                        PutObjectRequest.builder()
+                                .bucket(bucket)
+                                .key(s3Path)
+                                .contentType(file.getContentType())
+                                .build(),
+                        software.amazon.awssdk.core.sync.RequestBody.fromBytes(file.getBytes())
+                );
+
+                // 업로드된 파일의 S3 URL 추가
+                imageUrls.add("https://" + bucket + ".s3.amazonaws.com/" + s3Path);
+            }
+
+            return imageUrls;
+        }
+
+        // 비디오 단일 업로드
+        public String uploadVideo(MultipartFile file) throws IOException {
+            // 파일 확장자 추출
+            String originalFilename = file.getOriginalFilename();
+            String extension = originalFilename != null && originalFilename.contains(".")
+                    ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                    : "";
+
+            // S3에 저장할 파일 경로
+            String s3Path = "lecture-videos/" + UUID.randomUUID() + extension;
+
+            // 파일 업로드
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucket)
+                            .key(s3Path)
+                            .contentType(file.getContentType())
+                            .build(),
+                    software.amazon.awssdk.core.sync.RequestBody.fromBytes(file.getBytes())
+            );
+
+            // 업로드된 파일의 S3 URL 반환
+            return "https://" + bucket + ".s3.amazonaws.com/" + s3Path;
+        }
+    }
+

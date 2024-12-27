@@ -14,7 +14,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -27,23 +29,28 @@ public class LectureServiceImpl implements LectureService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;  // UserRepository 추가
     private final ModelMapper modelMapper;
+    private final S3Service s3Service;
 
-    public Lecture createLecture(LectureRequestDTO dto, Long boardId, CustomUser customUser) {
+    public Lecture createLecture(LectureRequestDTO dto, Long boardId, CustomUser customUser, List<String> imageUrls, String videoUrl) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new RuntimeException("게시판이 존재하지 않음.: " + boardId));
 
-        // userId로 User 엔티티를 찾아옴
         User user = userRepository.findByUserId(customUser.getUserId())
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않음."));
 
+        // 강의 엔티티 생성 및 설정
         Lecture lecture = modelMapper.map(dto, Lecture.class);
         lecture.setBoard(board);
-        lecture.setUser(user);  // User 엔티티 설정
+        lecture.setUser(user);
+        lecture.setImagesUrl(imageUrls); // 이미지 URL 리스트 저장
+        lecture.setVideoUrl(videoUrl);  // 비디오 URL 저장
         lecture.setCreatedAt(LocalDateTime.now());
 
         lectureRepository.save(lecture);
         return lecture;
     }
+
+
 
     // 게시판 내 강의 목록 조회
     public List<Lecture> getLectures(Long boardId) {
