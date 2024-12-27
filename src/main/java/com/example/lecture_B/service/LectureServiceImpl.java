@@ -14,9 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +27,6 @@ public class LectureServiceImpl implements LectureService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;  // UserRepository 추가
     private final ModelMapper modelMapper;
-    private final S3Service s3Service;
 
     public Lecture createLecture(LectureRequestDTO dto, Long boardId, CustomUser customUser, List<String> imageUrls, String videoUrl) {
         Board board = boardRepository.findById(boardId)
@@ -49,8 +46,6 @@ public class LectureServiceImpl implements LectureService {
         lectureRepository.save(lecture);
         return lecture;
     }
-
-
 
     // 게시판 내 강의 목록 조회
     public List<Lecture> getLectures(Long boardId) {

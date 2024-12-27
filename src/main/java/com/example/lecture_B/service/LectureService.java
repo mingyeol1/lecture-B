@@ -5,9 +5,7 @@ import com.example.lecture_B.dto.LectureResponseDTO;
 import com.example.lecture_B.entity.CustomUser;
 import com.example.lecture_B.entity.Lecture;
 import com.example.lecture_B.entity.User;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 public interface LectureService {
