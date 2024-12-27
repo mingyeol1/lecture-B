@@ -34,19 +34,20 @@ public class LectureController {
     @PostMapping("/{boardId}")
     public ResponseEntity<?> createLecture(
             @PathVariable Long boardId,
-            @RequestPart("lecture") String lectureString,
-            @RequestPart(value = "images", required = false) List<MultipartFile> images,
-            @RequestPart(value = "video", required = false) MultipartFile video,
-            @AuthenticationPrincipal CustomUser user) {
+            @RequestPart("lecture") String lectureString,       //lecture라는 이름을 String 타입으로 받음.
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,  //images라는 이름을 List<MultipartFile> 타입으로 받음.  required = false 파일이 없어도 요청이 유효함.
+            @RequestPart(value = "video", required = false) MultipartFile video, //video라는 이름을 MultipartFile로 받음. required = false 파일이 없어도 요청이 유효함.
+            @AuthenticationPrincipal CustomUser user) {     //현재 로그인한 사용자 객체 받아오기
 
         try {
+            // 이미지 업로드 처리.
             List<String> imageUrls = new ArrayList<>();
-            if (images != null && !images.isEmpty()) {
+            if (images != null && !images.isEmpty()) {  //이미지가 비어있지 않으면 저장.
                 imageUrls = s3Service.uploadImages(images);
             }
 
             String videoUrl = null;
-            if (video != null && !video.isEmpty()) {
+            if (video != null && !video.isEmpty()) {    //비디오가 비어있지 않으면 저장.
                 // 디버깅을 위한 로그 추가3
                 log.info("비디오 파일 이름: " + video.getOriginalFilename());
                 log.info("비디오 파일 크기: " + video.getSize());
@@ -54,14 +55,17 @@ public class LectureController {
 
                 videoUrl = s3Service.uploadVideo(video);
                 // 업로드된 URL 확인
-                log.info("업로드된 비디오 URL: " + videoUrl);
+                log.info("업로드된 비디오 URL : " + videoUrl);
             } else {
                 log.info("비디오 파일이 전송되지 않았습니다.");
             }
 
+            //lectureString을 LectureRequestDTO로 변환
+            //ObjectMapper는 JSON 데이터를 Java객체로 변환해줌.
             ObjectMapper objectMapper = new ObjectMapper();
             LectureRequestDTO dto = objectMapper.readValue(lectureString, LectureRequestDTO.class);
 
+            //강의 생성.
             Lecture lecture = lectureService.createLecture(dto, boardId, user, imageUrls, videoUrl);
             return ResponseEntity.ok("강의 생성 완료 : " + lecture);
         } catch (Exception e) {

@@ -36,10 +36,10 @@ public class LectureServiceImpl implements LectureService {
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않음."));
 
         // 강의 엔티티 생성 및 설정
-        Lecture lecture = modelMapper.map(dto, Lecture.class);
-        lecture.setBoard(board);
-        lecture.setUser(user);
-        lecture.setImagesUrl(imageUrls); // 이미지 URL 리스트 저장
+        Lecture lecture = modelMapper.map(dto, Lecture.class); //기본적인 강의 내용 설정.
+        lecture.setBoard(board);    //게시판 정보
+        lecture.setUser(user);      //사용자 정보.
+        lecture.setImagesUrl(imageUrls); // 외부에서 값을 받아와 이미지 URL 리스트 저장
         lecture.setVideoUrl(videoUrl);  // 비디오 URL 저장
         lecture.setCreatedAt(LocalDateTime.now());
 
