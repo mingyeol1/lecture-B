@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Transactional
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
-//    void deleteByToken(String token);
+    void deleteByToken(String token);
 
     @Modifying
     @Query("UPDATE RefreshToken rt SET rt.token = :newToken WHERE rt.userId = :username")

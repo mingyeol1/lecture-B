@@ -40,7 +40,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    @PostMapping("signUp")
+    @PostMapping("/signUp")
     public ResponseEntity<?> signUp(@RequestBody SignUpDTO signUpDTO){
         try {
             User user = userService.signUp(signUpDTO);
@@ -133,10 +133,13 @@ public class AuthController {
 
   // 굳이 로그아웃할 때 디비값을 건드릴 필요가 있을까 싶어 주석. 허나 회원 탈퇴시에는 값을 삭제하도록 수정.
         // "Bearer " 부분 제거 - 토큰 값이 "Bearer ${accessToken}" 이 방식으로 들어가기 때문
+    //토큰값이 삭제가 안돼서 나중에 다시 수정.
 //        String refreshToken = token.substring(7);
 //        log.info("refreshToken : " + refreshToken);
 //        // Refresh Token 삭제
 //        refreshTokenRepository.deleteByToken(refreshToken);
+
+
         // SecurityContextHolder 초기화
         SecurityContextHolder.clearContext();
 
