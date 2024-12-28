@@ -13,6 +13,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -131,13 +132,22 @@ public class AuthController {
         log.info("logout token(successToken) : " + token);
 
 
-  // 굳이 로그아웃할 때 디비값을 건드릴 필요가 있을까 싶어 주석. 허나 회원 탈퇴시에는 값을 삭제하도록 수정.
+  // 리프레시가 아닌 엑세스토큰을 가리키고 있어서 수정.
         // "Bearer " 부분 제거 - 토큰 값이 "Bearer ${accessToken}" 이 방식으로 들어가기 때문
     //토큰값이 삭제가 안돼서 나중에 다시 수정.
 //        String refreshToken = token.substring(7);
 //        log.info("refreshToken : " + refreshToken);
 //        // Refresh Token 삭제
 //        refreshTokenRepository.deleteByToken(refreshToken);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userId = authentication.getName();
+
+//        userid행 자체를 지워버려서 주석.
+//        refreshTokenRepository.deleteByUserId(userId);
+
+        //리프레시 토큰을 가지고 있는 userid에 null값으로 교체
+        refreshTokenRepository.setTokenNullByUserId(userId);
 
 
         // SecurityContextHolder 초기화
