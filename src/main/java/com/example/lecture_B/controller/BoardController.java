@@ -1,6 +1,7 @@
 package com.example.lecture_B.controller;
 
 import com.example.lecture_B.dto.BoardDTO;
+import com.example.lecture_B.dto.BoardResponseDTO;
 import com.example.lecture_B.entity.Board;
 import com.example.lecture_B.service.BoardService;
 import lombok.RequiredArgsConstructor;
@@ -29,12 +30,12 @@ public class BoardController {
     }
     //id 값으로 게시판 조회
     @GetMapping("/{boardId}")
-    public ResponseEntity<Board> getBoardById(@PathVariable Long boardId) {
+    public ResponseEntity<BoardDTO> getBoardById(@PathVariable Long boardId) {
         return ResponseEntity.ok(boardService.getBoard(boardId));
     }
     //모든 게시판 조회.
     @GetMapping
-    public ResponseEntity<List<Board>> getAllBoards() {
+    public ResponseEntity<List<BoardResponseDTO>> getAllBoards() {
         return ResponseEntity.ok(boardService.getAllBoards());
     }
     //id값으로 게시판 삭제.

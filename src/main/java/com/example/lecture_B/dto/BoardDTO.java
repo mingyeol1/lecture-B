@@ -1,9 +1,11 @@
 package com.example.lecture_B.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import java.util.List;
 
 @Data
+@AllArgsConstructor
 public class BoardDTO {
     private Long id;
     private String name;
