@@ -1,5 +1,6 @@
 package com.example.lecture_B.service;
 
+import com.example.lecture_B.dto.BoardDTO;
 import com.example.lecture_B.dto.LectureRequestDTO;
 import com.example.lecture_B.dto.LectureResponseDTO;
 import com.example.lecture_B.entity.Board;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,8 +50,27 @@ public class LectureServiceImpl implements LectureService {
     }
 
     // 게시판 내 강의 목록 조회
-    public List<Lecture> getLectures(Long boardId) {
-        return lectureRepository.findByBoardId(boardId);
+    @Override
+    public LectureResponseDTO getLectures(Long lectureId) {
+        // 강의 조회
+        Lecture lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의"));
+
+        // LectureResponseDTO로 변환
+        return convertToLectureResponseDTO(lecture);
+    }
+
+    private LectureResponseDTO convertToLectureResponseDTO(Lecture lecture) {
+        // Lecture 엔티티를 LectureResponseDTO로 변환
+        LectureResponseDTO dto = new LectureResponseDTO();
+        dto.setId(lecture.getId());
+        dto.setTitle(lecture.getTitle());
+        dto.setDescription(lecture.getDescription());
+        dto.setVideoUrl(lecture.getVideoUrl());
+        dto.setRating(lecture.getRating());
+        dto.setBoardName(lecture.getBoard().getName()); // 강의가 속한 게시판 이름
+        dto.setUploaderNickname(lecture.getUser().getNickname()); // 강의를 업로드한 유저의 닉네임
+        return dto;
     }
 
     public void deleteLecture(Long lectureId, Long userId) {

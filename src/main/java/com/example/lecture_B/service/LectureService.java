@@ -1,5 +1,6 @@
 package com.example.lecture_B.service;
 
+import com.example.lecture_B.dto.BoardDTO;
 import com.example.lecture_B.dto.LectureRequestDTO;
 import com.example.lecture_B.dto.LectureResponseDTO;
 import com.example.lecture_B.entity.CustomUser;
@@ -14,7 +15,7 @@ public interface LectureService {
     public Lecture createLecture(LectureRequestDTO dto, Long boardId, CustomUser customUser, List<String> imageUrls, String videoUrl);
 
     //게시판 내 강의 목록 조회
-    public List<Lecture> getLectures(Long boardId);
+    public LectureResponseDTO getLectures(Long lectureId);
 
     //강의 삭제
     public void deleteLecture(Long lectureId,Long userId);

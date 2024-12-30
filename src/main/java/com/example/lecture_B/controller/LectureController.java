@@ -1,5 +1,6 @@
 package com.example.lecture_B.controller;
 
+import com.example.lecture_B.dto.BoardDTO;
 import com.example.lecture_B.dto.LectureRequestDTO;
 import com.example.lecture_B.dto.LectureResponseDTO;
 import com.example.lecture_B.entity.CustomUser;
@@ -77,9 +78,9 @@ public class LectureController {
 
 
 
-    @GetMapping("/board/{boardId}")
-    public ResponseEntity<List<Lecture>> getLecturesByBoardId(@PathVariable Long boardId) {
-        return ResponseEntity.ok(lectureService.getLectures(boardId));
+    @GetMapping("/{lectureId}")
+    public ResponseEntity<LectureResponseDTO> getLecturesByBoardId(@PathVariable Long lectureId) {
+        return ResponseEntity.ok(lectureService.getLectures(lectureId));
     }
 
     @DeleteMapping("/{lectureId}")
