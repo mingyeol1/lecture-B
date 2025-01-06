@@ -25,8 +25,8 @@ public class CustomUser extends User {
              Collection<? extends GrantedAuthority> authorities) {
         super(username, password, authorities);
         this.id = id;   //식별자로 나중에 추가했음.
-        this.userId = username;
-        this.userPw = password;
+        this.userId = username; //유저의 로그인 아이디.
+        this.userPw = password; // 패스워드
         this.nickname = nickname;
         this.email = email;
         this.del = del;

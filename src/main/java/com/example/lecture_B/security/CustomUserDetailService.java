@@ -55,10 +55,12 @@ public class CustomUserDetailService implements UserDetailsService {
                     .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            log.error("Error converting roles to authorities", e);
-            throw new UsernameNotFoundException("Cannot convert roles to authorities", e);
+            log.error("권한 할당중 에러발생", e);
+            throw new UsernameNotFoundException("권한 할당중 에러발생.", e);
         }
 
+
+        //CustomUser 객체 생성
         CustomUser customUser = new CustomUser(
                 user.getId(),       //데이터베이스 고유 ID
                 user.getUserId(),   //사용자 로그인ID

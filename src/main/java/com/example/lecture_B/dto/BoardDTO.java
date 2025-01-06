@@ -10,5 +10,5 @@ public class BoardDTO {
     private Long id;
     private String name;
 //    private String description;
-    private List<LectureResponseDTO> lectures; // 게시판 내 강의 목록
+    private List<LectureResponseDTO> lectures; // 게시판 내 강의 목록 // 게시판을 만들 때 이게 필요할까?
 }
