@@ -44,11 +44,12 @@ public class AuthController {
     @PostMapping("/signUp")
     public ResponseEntity<?> signUp(@RequestBody SignUpDTO signUpDTO){
         try {
+            //클라이언트에서 signUpDTO값을 받음.
             User user = userService.signUp(signUpDTO);
             //회원가입 한 user 값을 리턴.
             return ResponseEntity.ok(user);
         }catch (UserService.UseridException e){
-            //예외 메시지에 따라 다른 응답반환.
+            //예외 메시지에 따라 다른 응답반환. 중복값들 리턴.
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
@@ -96,11 +97,14 @@ public class AuthController {
                 // 리프레시 토큰을 DB에 저장하기 위한 메서드  userID 값과 같이 저장.
                 Optional<RefreshToken> existingRefreshToken = refreshTokenRepository.findByUserId(userDetails.getUsername());
 
+                //RefreshToken 저장소에서 사용자의 기존 Refresh Token이 있는지 확인
                 if (existingRefreshToken.isPresent()) {
+                    //기존 Refresh Token이 있으면 갱신
                     RefreshToken firstRefreshToken = existingRefreshToken.get();
                     firstRefreshToken.setToken(refreshToken);
                     refreshTokenRepository.save(firstRefreshToken);
                 } else {
+                    //없으면 새로운 Refresh Token을 생성
                     RefreshToken newRefreshToken = new RefreshToken();
                     newRefreshToken.setToken(refreshToken);
                     newRefreshToken.setUserId(userDetails.getUsername());
@@ -151,6 +155,7 @@ public class AuthController {
 
 
         // SecurityContextHolder 초기화
+        //초기화를 하면 더이상 인증이 되지 않아서 로그인이 필수인 기능들을 이용하지 못하게함.
         SecurityContextHolder.clearContext();
 
         return ResponseEntity.ok("Logout successful");

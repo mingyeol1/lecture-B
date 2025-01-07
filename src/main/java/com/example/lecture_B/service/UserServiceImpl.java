@@ -40,11 +40,11 @@ public class UserServiceImpl implements UserService {
         }
 
         if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new UseridException("이메일이 이미 존재합니다.");  // 닉네임 중복
+            throw new UseridException("이메일이 이미 존재합니다.");  // 이메일 중복
         }
 
         if (userRepository.existsByNickname(dto.getNickname())){
-            throw new UseridException("닉네임이 이미 존재합니다.");    //이메일 중복
+            throw new UseridException("닉네임이 이미 존재합니다.");    //닉네임 중복
         }
 
 

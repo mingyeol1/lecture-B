@@ -159,6 +159,7 @@ public class UserController {
 
 
 
+    //프로필 이미지 설정.
     @PostMapping("/{userId}/upload-profile-image")
     public ResponseEntity<?> uploadProfileImage(@PathVariable String userId,
                                                       @RequestPart("file") MultipartFile file) {
