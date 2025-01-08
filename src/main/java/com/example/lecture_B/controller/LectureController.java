@@ -5,6 +5,7 @@ import com.example.lecture_B.dto.LectureRequestDTO;
 import com.example.lecture_B.dto.LectureResponseDTO;
 import com.example.lecture_B.entity.CustomUser;
 import com.example.lecture_B.entity.Lecture;
+import com.example.lecture_B.repository.LectureRepository;
 import com.example.lecture_B.service.LectureService;
 import com.example.lecture_B.service.S3Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,6 +32,7 @@ public class LectureController {
     private final LectureService lectureService;
     private final S3Service s3Service;
     private final ModelMapper modelMapper;
+    private final LectureRepository lectureRepository;
 
     @PostMapping("/{boardId}")
     public ResponseEntity<?> createLecture(
@@ -76,6 +78,72 @@ public class LectureController {
         }
     }
 
+    @PutMapping("/{lectureId}")
+    public ResponseEntity<?> modifyLecture(
+            @PathVariable Long lectureId,
+            @RequestPart("lecture") String lectureString,
+            @RequestPart(value = "images", required = false) List<MultipartFile> newImages,
+            @RequestPart(value = "video", required = false) MultipartFile newVideo,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        try {
+            // 기존 강의 조회
+            Lecture lecture = lectureRepository.findById(lectureId)
+                    .orElseThrow(() -> new RuntimeException("강의를 찾을 수 없습니다: " + lectureId));
+
+            // 권한 체크 (옵션)
+            if (!lecture.getUser().getId().equals(user.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("해당 강의를 수정할 권한이 없습니다.");
+            }
+
+            // 새 이미지 처리
+            List<String> newImageUrls = new ArrayList<>();
+            if (newImages != null && !newImages.isEmpty()) {
+                // 기존 이미지 삭제
+                if (lecture.getImagesUrl() != null) {
+                    for (String oldImageUrl : lecture.getImagesUrl()) {
+                        s3Service.deleteImage(oldImageUrl);
+                    }
+                }
+                newImageUrls = s3Service.uploadImages(newImages);
+            }
+
+            // 새 비디오 처리
+            String newVideoUrl = null;
+            if (newVideo != null && !newVideo.isEmpty()) {
+                // 기존 비디오 삭제
+                if (lecture.getVideoUrl() != null) {
+                    s3Service.deleteImage(lecture.getVideoUrl());
+                }
+                newVideoUrl = s3Service.uploadVideo(newVideo);
+            }
+
+            // lectureString을 DTO로 변환
+            ObjectMapper objectMapper = new ObjectMapper();
+            LectureRequestDTO dto = objectMapper.readValue(lectureString, LectureRequestDTO.class);
+
+            // 강의 수정
+            lectureService.modifyLectures(
+                    lectureId,
+                    dto,
+                    !newImageUrls.isEmpty() ? newImageUrls : lecture.getImagesUrl(),
+                    newVideoUrl != null ? newVideoUrl : lecture.getVideoUrl()
+            );
+
+            return ResponseEntity.ok("강의가 성공적으로 수정되었습니다.");
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("파일 처리 중 오류가 발생했습니다: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("서버 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
 
 
     @GetMapping("/{lectureId}")
@@ -86,11 +154,24 @@ public class LectureController {
     @DeleteMapping("/{lectureId}")
     public ResponseEntity<?> deleteLecture(@PathVariable Long lectureId, @AuthenticationPrincipal CustomUser currentUser) {
         try {
+
+            Lecture lecture = lectureRepository.findById(lectureId)
+                    .orElseThrow(() -> new RuntimeException("강의를 찾을 수 없습니다: " + lectureId));
             // 현재 유저 ID 추출
             Long currentUserId = currentUser.getId();
 
             // 강의 삭제 요청
             lectureService.deleteLecture(lectureId, currentUserId);
+            //이미지 삭제 처리
+            if (lecture.getImagesUrl() != null) {
+                for (String oldImageUrl : lecture.getImagesUrl()) {
+                    s3Service.deleteImage(oldImageUrl);
+                }
+            }
+            //영상 삭제 처리
+            if (lecture.getVideoUrl() != null) {
+                s3Service.deleteImage(lecture.getVideoUrl());
+            }
 
             return ResponseEntity.ok("강의가 성공적으로 삭제되었습니다.");
         } catch (RuntimeException e) {

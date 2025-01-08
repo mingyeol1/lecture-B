@@ -10,8 +10,10 @@ import com.example.lecture_B.entity.User;
 import com.example.lecture_B.repository.BoardRepository;
 import com.example.lecture_B.repository.LectureRepository;
 import com.example.lecture_B.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,28 @@ public class LectureServiceImpl implements LectureService {
         lectureRepository.save(lecture);
         return lecture;
     }
+
+
+    // Service 계층의 수정 메서드도 개선
+    @Override
+    @Transactional
+    public void modifyLectures(Long lectureId, LectureRequestDTO lectureRequestDTO,
+                               List<String> newImageUrls, String newVideoUrl) {
+        Lecture lecture = lectureRepository.findById(lectureId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 강의입니다: " + lectureId));
+
+        // 업데이트.
+        lecture.update(
+                lectureRequestDTO.getTitle(),
+                lectureRequestDTO.getDescription(),
+                newImageUrls,
+                newVideoUrl,
+                LocalDateTime.now()
+        );
+
+        lectureRepository.save(lecture);
+    }
+
 
     // 게시판 내 강의 목록 조회
     @Override

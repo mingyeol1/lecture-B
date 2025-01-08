@@ -14,11 +14,16 @@ public interface LectureService {
     //특정 게시판에 게시글 등록
     public Lecture createLecture(LectureRequestDTO dto, Long boardId, CustomUser customUser, List<String> imageUrls, String videoUrl);
 
-    //게시판 내 강의 목록 조회
+    //게시글 내 강의 목록 조회
     public LectureResponseDTO getLectures(Long lectureId);
+
+    //강의 수정
+    public void modifyLectures(Long lectureId ,LectureRequestDTO lectureRequestDTO, List<String> newImageUrls, String newVideoUrl);
 
     //강의 삭제
     public void deleteLecture(Long lectureId,Long userId);
+
+
 
 
 }
