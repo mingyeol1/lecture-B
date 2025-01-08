@@ -60,18 +60,21 @@
 <br/>
 <br/>
 
-##게시판생성
+## 게시판생성
 ![강의게시판](https://github.com/mingyeol1/lecture-B/blob/main/images/createboard.png)
 
 <br/>
 <br/>
+
 ## 강의생성
 ![강의](https://github.com/mingyeol1/lecture-B/blob/main/images/createlecture.png)
 
 <br/>
 <br/>
-##강의 생성 후 게시판
+
+## 강의 생성 후 게시판
 ![강의게시판2](https://github.com/mingyeol1/lecture-B/blob/main/images/read%20board2.png)
+
 <br/>
 <br/>
 
