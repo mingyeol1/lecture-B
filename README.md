@@ -13,14 +13,14 @@
 <br/>
 
 ## 2024-12-05 회원가입 및 로그인기능 완료
-
+![회원가입 이미지](https://github.com/mingyeol1/lecture-B/blob/main/images/signup.png)
 
 <br/>
 <br/>
 
 
 ##  2024-12-07 엑세스 토큰 및 리프레쉬 토큰등 권한 완료
-
+![로그인](https://github.com/mingyeol1/lecture-B/blob/main/images/signIn.png)
 
 <br/>
 <br/>
@@ -57,13 +57,26 @@
 
 ##  2024-12-27 다중 이미지 및 강의 영상 업로드 기능 완료 
 ## 문제점 : POSTMAN으로 상세 게시글 및 보드 게시글 확인 시 게시판과 게시글이 2개밖에 없는데 계속 반복되면서 나옴. 해결 해야함.
+<br/>
+<br/>
 
+##게시판생성
+![강의게시판](https://github.com/mingyeol1/lecture-B/blob/main/images/createboard.png)
 
+<br/>
+<br/>
+## 강의생성
+![강의](https://github.com/mingyeol1/lecture-B/blob/main/images/createlecture.png)
+
+<br/>
+<br/>
+##강의 생성 후 게시판
+![강의게시판2](https://github.com/mingyeol1/lecture-B/blob/main/images/read%20board2.png)
 <br/>
 <br/>
 
 
-##  2024-12-30 Board 순환참조 해결        
+##  2024-12-30 Board 순환참조 해결
 
 
 
