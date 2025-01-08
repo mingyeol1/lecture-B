@@ -13,14 +13,14 @@
 <br/>
 
 ## 2024-12-05 회원가입 및 로그인기능 완료
-![회원가입 이미지](https://github.com/mingyeol1/lecture-B/blob/main/images/signup.png)
+![회원가입 이미지](https://github.com/mingyeol1/lecture-B/blob/main/images/signIn.png)
 
 <br/>
 <br/>
 
 
 ##  2024-12-07 엑세스 토큰 및 리프레쉬 토큰등 권한 완료
-![로그인](https://github.com/mingyeol1/lecture-B/blob/main/images/signIn.png)
+![로그인](https://github.com/mingyeol1/lecture-B/blob/main/images/signup.png)
 
 <br/>
 <br/>
