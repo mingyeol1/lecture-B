@@ -140,12 +140,7 @@ public class LectureServiceImpl implements LectureService {
         Lecture lecture = lectureRepository.findById(lectureId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의"));
 
-        // LectureResponseDTO로 변환
-        return convertToLectureResponseDTO(lecture);
-    }
-
-    private LectureResponseDTO convertToLectureResponseDTO(Lecture lecture) {
-        // Lecture 엔티티를 LectureResponseDTO로 변환
+        // Lecture 엔티티를 LectureResponseDTO로 변환하여 반환
         LectureResponseDTO dto = new LectureResponseDTO();
         dto.setId(lecture.getId());
         dto.setTitle(lecture.getTitle());
@@ -154,8 +149,10 @@ public class LectureServiceImpl implements LectureService {
         dto.setRating(lecture.getRating());
         dto.setBoardName(lecture.getBoard().getName()); // 강의가 속한 게시판 이름
         dto.setUploaderNickname(lecture.getUser().getNickname()); // 강의를 업로드한 유저의 닉네임
+
         return dto;
     }
+
 
     @Override
     public void deleteLecture(Long lectureId, Long userId) {
