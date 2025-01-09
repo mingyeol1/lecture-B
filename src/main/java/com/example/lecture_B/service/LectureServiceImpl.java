@@ -10,6 +10,7 @@ import com.example.lecture_B.entity.User;
 import com.example.lecture_B.repository.BoardRepository;
 import com.example.lecture_B.repository.LectureRepository;
 import com.example.lecture_B.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -17,22 +18,45 @@ import org.springframework.boot.context.config.ConfigDataResourceNotFoundExcepti
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class LectureServiceImpl implements LectureService {
 
     private final LectureRepository lectureRepository;
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;  // UserRepository 추가
     private final ModelMapper modelMapper;
+    private final S3Service s3Service;
 
-    public Lecture createLecture(LectureRequestDTO dto, Long boardId, CustomUser customUser, List<String> imageUrls, String videoUrl) {
+    public Lecture createLecture(Long boardId, CustomUser customUser, String lectureString,
+                                 List<MultipartFile> images, MultipartFile video) throws Exception {
+        // 이미지 업로드 처리
+        List<String> imageUrls = new ArrayList<>();
+        if (images != null && !images.isEmpty()) {
+            imageUrls = s3Service.uploadImages(images);
+        }
+
+        // 비디오 업로드 처리
+        String videoUrl = null;
+        if (video != null && !video.isEmpty()) {
+            videoUrl = s3Service.uploadVideo(video);
+        }
+
+        // lectureString을 DTO로 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        LectureRequestDTO dto = objectMapper.readValue(lectureString, LectureRequestDTO.class);
+
+        // 게시판 및 사용자 정보 조회
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new RuntimeException("게시판이 존재하지 않음.: " + boardId));
 
@@ -40,37 +64,73 @@ public class LectureServiceImpl implements LectureService {
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않음."));
 
         // 강의 엔티티 생성 및 설정
-        Lecture lecture = modelMapper.map(dto, Lecture.class); //기본적인 강의 내용 설정.
-        lecture.setBoard(board);    //게시판 정보
-        lecture.setUser(user);      //사용자 정보.
-        lecture.setImagesUrl(imageUrls); // 외부에서 값을 받아와 이미지 URL 리스트 저장
-        lecture.setVideoUrl(videoUrl);  // 비디오 URL 저장
+        Lecture lecture = modelMapper.map(dto, Lecture.class);
+        lecture.setBoard(board);
+        lecture.setUser(user);
+        lecture.setImagesUrl(imageUrls);
+        lecture.setVideoUrl(videoUrl);
         lecture.setCreatedAt(LocalDateTime.now());
 
+        // 강의 저장
         lectureRepository.save(lecture);
+
         return lecture;
     }
 
 
-    // Service 계층의 수정 메서드도 개선
+    //강의 수정.
     @Override
-    @Transactional
-    public void modifyLectures(Long lectureId, LectureRequestDTO lectureRequestDTO,
-                               List<String> newImageUrls, String newVideoUrl) {
+    public void modifyLectures(Long lectureId, String lectureString, List<MultipartFile> images,
+                                MultipartFile video, CustomUser user) throws IOException {
+        // 기존 강의 조회
         Lecture lecture = lectureRepository.findById(lectureId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 강의입니다: " + lectureId));
+                .orElseThrow(() -> new RuntimeException("강의를 찾을 수 없습니다: " + lectureId));
 
-        // 업데이트.
+        // 권한 체크
+        if (!lecture.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("해당 강의를 수정할 권한이 없습니다.");
+        }
+
+        // 새 이미지 처리
+        List<String> imageUrls = new ArrayList<>();
+        if (images != null && !images.isEmpty()) {
+            // 기존 이미지 삭제
+            if (lecture.getImagesUrl() != null) {
+                for (String oldImageUrl : lecture.getImagesUrl()) {
+                    s3Service.deleteImage(oldImageUrl);
+                }
+            }
+            imageUrls = s3Service.uploadImages(images);
+        }
+
+        // 새 비디오 처리
+        String videoUrl = null;
+        if (video != null && !video.isEmpty()) {
+            // 기존 비디오 삭제
+            if (lecture.getVideoUrl() != null) {
+                s3Service.deleteImage(lecture.getVideoUrl());
+            }
+            videoUrl = s3Service.uploadVideo(video);
+        }
+
+        // lectureString을 DTO로 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        LectureRequestDTO dto = objectMapper.readValue(lectureString, LectureRequestDTO.class);
+
+        // 강의 수정
         lecture.update(
-                lectureRequestDTO.getTitle(),
-                lectureRequestDTO.getDescription(),
-                newImageUrls,
-                newVideoUrl,
+                dto.getTitle(),
+                dto.getDescription(),
+                !imageUrls.isEmpty() ? imageUrls : lecture.getImagesUrl(),
+                videoUrl != null ? videoUrl : lecture.getVideoUrl(),
                 LocalDateTime.now()
         );
 
+        // 강의 저장
         lectureRepository.save(lecture);
+
     }
+
 
 
     // 게시판 내 강의 목록 조회
@@ -97,10 +157,11 @@ public class LectureServiceImpl implements LectureService {
         return dto;
     }
 
+    @Override
     public void deleteLecture(Long lectureId, Long userId) {
         // 강의 조회
         Lecture lecture = lectureRepository.findById(lectureId)
-                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다.: " + lectureId));
+                .orElseThrow(() -> new RuntimeException("강의를 찾을 수 없습니다: " + lectureId));
 
         // 강의를 올린 사용자의 ID 확인
         Long uploaderId = lecture.getUser().getId();
@@ -110,7 +171,20 @@ public class LectureServiceImpl implements LectureService {
             throw new RuntimeException("유저가 달라 지울 권한이 없습니다.");
         }
 
+        // 이미지 삭제 처리
+        if (lecture.getImagesUrl() != null) {
+            for (String oldImageUrl : lecture.getImagesUrl()) {
+                s3Service.deleteImage(oldImageUrl);
+            }
+        }
+
+        // 영상 삭제 처리
+        if (lecture.getVideoUrl() != null) {
+            s3Service.deleteImage(lecture.getVideoUrl());
+        }
+
         // 강의 삭제
         lectureRepository.deleteById(lectureId);
+
     }
 }

@@ -29,7 +29,7 @@ public class User {
     private String profileImage;
     private boolean del;
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.LAZY)// 데이터를 따로저장.
     @Builder.Default
     @ToString.Exclude
     private Set<UserRole> userRole = new HashSet<>(); // Enum: ADMIN, USER, ANA

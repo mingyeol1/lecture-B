@@ -23,5 +23,7 @@ public class Board {
     //ManyToOne과 이름이 다르면 에러남.
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Lecture> lectures; // 게시판에 속한 강의 목록
+
+
 }
 
