@@ -2,6 +2,11 @@
 
 <hr>
 
+# 개발환경
+## Intellij Community
+## Java17, Spring Boot, Spring Securuty, MySQL, aws S3
+## PostMan  
+
 <br/>
 <br/>
 
