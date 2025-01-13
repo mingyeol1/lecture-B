@@ -41,9 +41,9 @@ public class LectureServiceImpl implements LectureService {
     public Lecture createLecture(Long boardId, CustomUser customUser, String lectureString,
                                  List<MultipartFile> images, MultipartFile video) throws Exception {
         // 이미지 업로드 처리
-        List<String> imageUrls = new ArrayList<>();
+        List<String> imagesUrl = new ArrayList<>();
         if (images != null && !images.isEmpty()) {
-            imageUrls = s3Service.uploadImages(images);
+            imagesUrl = s3Service.uploadImages(images);
         }
 
         // 비디오 업로드 처리
@@ -67,7 +67,7 @@ public class LectureServiceImpl implements LectureService {
         Lecture lecture = modelMapper.map(dto, Lecture.class);
         lecture.setBoard(board);
         lecture.setUser(user);
-        lecture.setImagesUrl(imageUrls);
+        lecture.setImagesUrl(imagesUrl);
         lecture.setVideoUrl(videoUrl);
         lecture.setCreatedAt(LocalDateTime.now());
 
@@ -141,14 +141,11 @@ public class LectureServiceImpl implements LectureService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 강의"));
 
         // Lecture 엔티티를 LectureResponseDTO로 변환하여 반환
-        LectureResponseDTO dto = new LectureResponseDTO();
-        dto.setId(lecture.getId());
-        dto.setTitle(lecture.getTitle());
-        dto.setDescription(lecture.getDescription());
-        dto.setVideoUrl(lecture.getVideoUrl());
-        dto.setRating(lecture.getRating());
-        dto.setBoardName(lecture.getBoard().getName()); // 강의가 속한 게시판 이름
-        dto.setUploaderNickname(lecture.getUser().getNickname()); // 강의를 업로드한 유저의 닉네임
+        LectureResponseDTO dto = modelMapper.map(lecture, LectureResponseDTO.class);
+
+        //자동으로 매핑이 되지않아서 직접 필드 설정함.
+        dto.setBoardName(lecture.getBoard().getName());
+        dto.setUploaderNickname(lecture.getUser().getNickname());
 
         return dto;
     }

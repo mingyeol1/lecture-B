@@ -38,26 +38,18 @@ public class BoardServiceImpl implements BoardService {
     //생성된 게시판 조회.
     @Override
     public BoardDTO getBoard(Long boardId) {
-        Board board = boardRepository.findById(boardId) //board id로 게시판 조회.
+        // 게시판 조회
+        Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시판"));
 
-        // Lecture를 LectureResponseDTO로 변환
-        List<LectureResponseDTO> lectureResponseDTO = board.getLectures().stream()// board 엔티티에 lectures필드를 가져옴.
-                .map(lecture -> {   //스트림 내 각 lecture 엔티티를 DTO로 변환.
-                    LectureResponseDTO dto = new LectureResponseDTO();     //Lecture 엔티티의 데이터를 DTO에 복사.
-                    dto.setId(lecture.getId());
-                    dto.setTitle(lecture.getTitle());
-                    dto.setDescription(lecture.getDescription());
-                    dto.setVideoUrl(lecture.getVideoUrl());
-                    dto.setRating(lecture.getRating());
-                    dto.setBoardName(board.getName()); // 현재 board의 이름
-                    dto.setUploaderNickname(lecture.getUser().getNickname()); // 강의를 업로드한 유저의 닉네임
-                    return dto;
-                })
+        // Lecture 엔티티를 LectureResponseDTO로 변환
+        List<LectureResponseDTO> lectureResponseDTOs = board.getLectures().stream()
+                .map(lecture -> modelMapper.map(lecture, LectureResponseDTO.class))
+
                 .collect(Collectors.toList());
 
-        // Board를 BoardDTO로 변환
-        return new BoardDTO(board.getId(), board.getName(), lectureResponseDTO);
+        // Board 엔티티를 BoardDTO로 변환
+        return new BoardDTO(board.getId(), board.getName(), lectureResponseDTOs);
     }
 
     //모든 게시판 조회 순환 참조 때문에 주석.
@@ -68,34 +60,27 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public List<BoardResponseDTO> getAllBoards() {
-        List<Board> boards = boardRepository.findAll(); // 모든 게시판 조회
+        List<Board> boards = boardRepository.findAll();
+
         return boards.stream()
                 .map(board -> {
-                    // 강의 리스트를 LectureResponseDTO로 변환
+                    BoardResponseDTO boardDTO = modelMapper.map(board, BoardResponseDTO.class);
+
+                    // 강의 리스트 변환
                     List<LectureResponseDTO> lectures = board.getLectures().stream()
                             .map(lecture -> {
-                                LectureResponseDTO dto = new LectureResponseDTO();
-                                dto.setId(lecture.getId());
-                                dto.setTitle(lecture.getTitle());
-                                dto.setDescription(lecture.getDescription());
-                                dto.setVideoUrl(lecture.getVideoUrl());
-                                dto.setRating(lecture.getRating());
-                                dto.setBoardName(board.getName()); // 현재 board의 이름 설정
-                                dto.setUploaderNickname(lecture.getUser().getNickname()); // 강의를 업로드한 유저의 닉네임 설정
-                                return dto;
+                                LectureResponseDTO lectureDTO = modelMapper.map(lecture, LectureResponseDTO.class);
+                                lectureDTO.setBoardName(board.getName());   //자동으로 매핑이 되지않아서 직접 값을 넣음
+                                lectureDTO.setUploaderNickname(lecture.getUser().getNickname()); //자동으로 매핑이 되지않아서 직접 값을 넣음
+                                return lectureDTO;
                             })
                             .collect(Collectors.toList());
 
-                    // Board를 BoardResponseDTO로 변환
-                    BoardResponseDTO dto = new BoardResponseDTO();
-                    dto.setId(board.getId());
-                    dto.setName(board.getName());
-                    dto.setLectures(lectures);
-                    return dto;
+                    boardDTO.setLectures(lectures);
+                    return boardDTO;
                 })
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public void deleteBoard(Long boardId) {

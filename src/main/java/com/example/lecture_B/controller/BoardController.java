@@ -28,6 +28,7 @@ public class BoardController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
     //id 값으로 게시판 조회
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardDTO> getBoardById(@PathVariable Long boardId) {
@@ -38,6 +39,8 @@ public class BoardController {
     public ResponseEntity<List<BoardResponseDTO>> getAllBoards() {
         return ResponseEntity.ok(boardService.getAllBoards());
     }
+
+
     //id값으로 게시판 삭제.
     @DeleteMapping("/{boardId}")
     public ResponseEntity<String> deleteBoard(@PathVariable Long boardId) {
