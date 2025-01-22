@@ -8,7 +8,7 @@ import com.example.lecture_B.entity.User;
 
 public interface UserService {
 
-    class UseridException extends Exception {
+    class UseridException extends Exception {   //오류를 직접 만들고 던짐.
         public UseridException(String message) {
             super(message);
         }

@@ -49,6 +49,7 @@ public class UserServiceImpl implements UserService {
 
 
         // SignUpDTO와 User 클래스 매핑.
+        // 서로 값이 다르면 매핑이 진행되지않고 같은 메서드가(getter, setter) 있어야함
         User user = modelMapper.map(dto, User.class);
         //패스워드 인코딩.
         user.setUserPw(passwordEncoder.encode(dto.getUserPw()));
@@ -63,16 +64,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User signIn(String id, String pw) throws UseridException {
-        //유저가 없는지 있는지 확인.
+        //유저가 없는지 있는지 확인. 유저의 프라이머리키가 아닌 id값으로 확인으로 넣었음.
         Optional<User> user = userRepository.findByUserId(id);
 
-        //del이 true면?
-        if (user.isPresent()) {
-            if (user.get().isDel()) {
+        //사용자 로그인
+        if (user.isPresent()) {     //Optional 메서드로 값이 있는지 없는지 확인 왜 사용하느냐 null포인트 익셉션 방지.
+            if (user.get().isDel()) {   //get().isDel이 ture면 if문 동작
                 log.info("삭제 예정인 아이디.");
                 throw new UseridException("삭제된 아이디입니다.");
-            } else if (passwordEncoder.matches(pw, user.get().getUserPw())) {
-                return user.get();
+            } else if (passwordEncoder.matches(pw, user.get().getUserPw())) {   //아니면 비밀번호 디코딩 후 사용자 정보 출력.
+                return user.get();                                              //사용자 정보.
             } else {
                 log.info("비밀번호 불일치.");
                 return null;
@@ -111,7 +112,6 @@ public class UserServiceImpl implements UserService {
             User user = optionalUser.get();
 
             // 현재 유저의 닉네임과 이메일을 제외하고 중복 검사
-            // 소셜로그인시 수정하면 nullPointerException 때문에 User.getNickname() != null 를 넣어줌.
             if (user.getNickname() != null && !user.getNickname().equals(modifyDTO.getNickname()) && userRepository.existsByNickname(modifyDTO.getNickname())) {
                 log.info("이미 있는 닉네임");
                 throw new UseridException("닉네임이 이미 존재합니다.");
