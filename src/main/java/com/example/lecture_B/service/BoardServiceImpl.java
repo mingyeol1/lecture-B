@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +39,7 @@ public class BoardServiceImpl implements BoardService {
     //생성된 게시판 조회.
     @Override
     public BoardDTO getBoard(Long boardId) {
-        // 게시판 조회
+        // 게시판 조회 Optional<Board>보다 코드가 깔끔해져서 이걸로 변경.
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시판"));
 

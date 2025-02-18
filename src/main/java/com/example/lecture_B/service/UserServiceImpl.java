@@ -76,11 +76,11 @@ public class UserServiceImpl implements UserService {
                 return user.get();                                              //사용자 정보.
             } else {
                 log.info("비밀번호 불일치.");
-                return null;
+                throw new UseridException("아이디 및 비밀번호가 다릅니다.");
             }
         } else {
             log.info("존재하지 않는 아이디.");
-            return null;
+            throw new UseridException("아이디 및 비밀번호가 다릅니다.");
         }
 
 
