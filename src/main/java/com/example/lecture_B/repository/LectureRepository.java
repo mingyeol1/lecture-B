@@ -2,6 +2,8 @@ package com.example.lecture_B.repository;
 
 import com.example.lecture_B.entity.Lecture;
 import com.example.lecture_B.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,5 +16,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     List<Lecture> findByBoardId(Long boardId);
 
     Optional<User> findByUserId(Long userId);
+
+    Page<Lecture> findByBoardId(Long boardId, Pageable pageable);
 
 }

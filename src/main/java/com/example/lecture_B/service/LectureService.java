@@ -6,6 +6,7 @@ import com.example.lecture_B.dto.LectureResponseDTO;
 import com.example.lecture_B.entity.CustomUser;
 import com.example.lecture_B.entity.Lecture;
 import com.example.lecture_B.entity.User;
+import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -20,12 +21,18 @@ public interface LectureService {
     //게시글 내 강의 목록 조회
     public LectureResponseDTO getLectures(Long lectureId);
 
+    //게시글 페이지네이션
+    public Page<LectureResponseDTO> getLecturesByBoardId(Long boardId, int page, int size);
+
     //강의 수정
     public void modifyLectures(Long lectureId, String lectureString, List<MultipartFile> images,
                                MultipartFile video, CustomUser user) throws IOException;
 
     //강의 삭제
     public void deleteLecture(Long lectureId,Long userId);
+
+
+
 
 
 

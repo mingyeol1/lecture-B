@@ -1,6 +1,7 @@
 package com.example.lecture_B.service;
 
 import com.example.lecture_B.dto.BoardDTO;
+import com.example.lecture_B.dto.BoardResponseDTO;
 import com.example.lecture_B.dto.LectureRequestDTO;
 import com.example.lecture_B.dto.LectureResponseDTO;
 import com.example.lecture_B.entity.Board;
@@ -15,6 +16,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -148,6 +152,19 @@ public class LectureServiceImpl implements LectureService {
         dto.setUploaderNickname(lecture.getUser().getNickname());
 
         return dto;
+    }
+
+    @Override
+    public Page<LectureResponseDTO> getLecturesByBoardId(Long boardId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Lecture> lecturesPage = lectureRepository.findByBoardId(boardId, pageable);
+
+        return lecturesPage.map(lecture -> {
+            LectureResponseDTO lectureDTO = modelMapper.map(lecture, LectureResponseDTO.class);
+            lectureDTO.setBoardName(lecture.getBoard().getName());  // 강의가 속한 게시판 이름 설정
+            lectureDTO.setUploaderNickname(lecture.getUser().getNickname());  // 업로더 닉네임 설정
+            return lectureDTO;
+        });
     }
 
 
