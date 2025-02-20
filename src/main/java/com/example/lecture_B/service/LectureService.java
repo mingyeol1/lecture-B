@@ -3,6 +3,7 @@ package com.example.lecture_B.service;
 import com.example.lecture_B.dto.BoardDTO;
 import com.example.lecture_B.dto.LectureRequestDTO;
 import com.example.lecture_B.dto.LectureResponseDTO;
+import com.example.lecture_B.dto.LectureSearchDTO;
 import com.example.lecture_B.entity.CustomUser;
 import com.example.lecture_B.entity.Lecture;
 import com.example.lecture_B.entity.User;
@@ -33,7 +34,8 @@ public interface LectureService {
 
 
 
-
+    //페이지 검색
+    public Page<LectureSearchDTO> searchLectures(String keyword, int page, int size);
 
 
 

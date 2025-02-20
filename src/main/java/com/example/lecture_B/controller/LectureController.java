@@ -1,6 +1,7 @@
 package com.example.lecture_B.controller;
 
 import com.example.lecture_B.dto.LectureResponseDTO;
+import com.example.lecture_B.dto.LectureSearchDTO;
 import com.example.lecture_B.entity.CustomUser;
 import com.example.lecture_B.service.LectureService;
 import lombok.RequiredArgsConstructor;
@@ -97,5 +98,14 @@ public class LectureController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 오류 발생");
         }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<LectureSearchDTO>> searchLectures(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Page<LectureSearchDTO> results = lectureService.searchLectures(keyword, page, size);
+        return ResponseEntity.ok(results);
     }
 }

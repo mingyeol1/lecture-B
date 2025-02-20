@@ -1,9 +1,6 @@
 package com.example.lecture_B.service;
 
-import com.example.lecture_B.dto.BoardDTO;
-import com.example.lecture_B.dto.BoardResponseDTO;
-import com.example.lecture_B.dto.LectureRequestDTO;
-import com.example.lecture_B.dto.LectureResponseDTO;
+import com.example.lecture_B.dto.*;
 import com.example.lecture_B.entity.Board;
 import com.example.lecture_B.entity.CustomUser;
 import com.example.lecture_B.entity.Lecture;
@@ -19,6 +16,7 @@ import org.springframework.boot.context.config.ConfigDataResourceNotFoundExcepti
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -197,5 +195,17 @@ public class LectureServiceImpl implements LectureService {
         // 강의 삭제
         lectureRepository.deleteById(lectureId);
 
+    }
+
+    @Override
+    public Page<LectureSearchDTO> searchLectures(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Lecture> lecturePage = lectureRepository.searchByKeyword(keyword, pageable);
+
+        return lecturePage.map(lecture -> {
+            LectureSearchDTO lectureSearchDTO = modelMapper.map(lecture, LectureSearchDTO.class);
+            lectureSearchDTO.setUserNickname(lecture.getUser().getNickname());  // 업로더 닉네임 설정
+            return lectureSearchDTO;
+        });
     }
 }
