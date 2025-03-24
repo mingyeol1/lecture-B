@@ -86,11 +86,11 @@ public class LectureServiceImpl implements LectureService {
                                 MultipartFile video, CustomUser user) throws IOException {
         // 기존 강의 조회
         Lecture lecture = lectureRepository.findById(lectureId)
-                .orElseThrow(() -> new RuntimeException("강의를 찾을 수 없습니다: " + lectureId));
+                .orElseThrow(() -> new IOException("강의를 찾을 수 없습니다: " + lectureId));
 
         // 권한 체크
         if (!lecture.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("해당 강의를 수정할 권한이 없습니다.");
+            throw new IOException("해당 강의를 수정할 권한이 없습니다.");
         }
 
         // 새 이미지 처리
