@@ -56,8 +56,9 @@ public class CustomSecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/boards/*/lectures/search").permitAll() // 해당 경로에 대한 모든 요청 허용
-                        .anyRequest().permitAll() // 모든 요청 허용
+                        .requestMatchers("/api/auth/login", "/api/auth/signUp").permitAll()  // 로그인과 회원가입은 모두 허용
+                        .requestMatchers("/api/boards/**").permitAll()  // 게시판은 USER 권한이 있어야 접근 가능
+                        .anyRequest().authenticated()  // 그 외 요청은 인증 필요
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())); // CORS 설정
 
