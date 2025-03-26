@@ -37,8 +37,13 @@ public class TokenCheckFilter extends OncePerRequestFilter {    // OncePerReques
         String path = request.getRequestURI();
 
         //토큰값이 없어도 들어갈 수 있는 페이지 //검색 API 요청은 인증 체크 제외
-        if (path.equals("/api/auth/signUp") || path.equals("/api/auth/signIn") ||path.startsWith("/api/boards/") && path.contains("/lectures/search")) {
+        if (path.equals("/api/auth/signUp") || path.equals("/api/auth/signIn")) {
             filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (path.startsWith("/api/boards") || path.startsWith("/api/lectures")) {
+            filterChain.doFilter(request, response);  // 토큰 없이 통과
             return;
         }
 
