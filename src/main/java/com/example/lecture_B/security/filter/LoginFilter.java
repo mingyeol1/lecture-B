@@ -1,10 +1,13 @@
 package com.example.lecture_B.security.filter;
 
+import com.example.lecture_B.security.handler.UserLoginSuccessHandler;
 import com.google.gson.Gson;
+import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,12 +22,15 @@ import java.util.Map;
 @Log4j2
 public class LoginFilter extends AbstractAuthenticationProcessingFilter {
 
+    private final UserLoginSuccessHandler userLoginSuccessHandler;
+
     // 생성자는 defaultFilterProcessUrl을 받아 부모 클래스의 생성자를 호출합니다.
     // 이는 필터가 특정 URL 패턴에 대해 작동하도록 설정
-    public LoginFilter(String defaultFilterProcessUrl) {
+    public LoginFilter(String defaultFilterProcessUrl, AuthenticationManager authenticationManager, UserLoginSuccessHandler userLoginSuccessHandler) {
 
         super(defaultFilterProcessUrl);
-
+        setAuthenticationManager(authenticationManager);
+        this.userLoginSuccessHandler = userLoginSuccessHandler;
     }
 
     @Override
@@ -45,13 +51,13 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         // UsernamePasswordAuthenticationToken에 UserId와 비밀번호를 담음
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 jsonData.get("userId"),
-                jsonData.get("password")
+                jsonData.get("userPw")
         );
 
         if (jsonData.get("userId") == null || jsonData.get("userId").isEmpty()) {
             throw new AuthenticationServiceException("userId is missing");
         }
-        if (jsonData.get("password") == null || jsonData.get("password").isEmpty()) {
+        if (jsonData.get("userPw") == null || jsonData.get("userPw").isEmpty()) {
             throw new AuthenticationServiceException("Password is missing");
         }
         log.info("authenticationToken : " + authenticationToken.getPrincipal().toString());
@@ -70,6 +76,15 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
             log.error(e.getMessage());
         }
         return null;
+    }
+
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                            FilterChain chain, Authentication authResult) throws IOException, ServletException {
+        log.info("Login successful for user: " + authResult.getName());
+
+        // 인증 성공 후 UserLoginSuccessHandler를 호출하여 응답을 처리
+        userLoginSuccessHandler.onAuthenticationSuccess(request, response, authResult);
     }
 }
 

@@ -3,8 +3,10 @@ package com.example.lecture_B.config;
 import com.example.lecture_B.entity.CustomUser;
 import com.example.lecture_B.repository.RefreshTokenRepository;
 import com.example.lecture_B.security.CustomUserDetailService;
+import com.example.lecture_B.security.filter.LoginFilter;
 import com.example.lecture_B.security.filter.RefreshTokenFilter;
 import com.example.lecture_B.security.filter.TokenCheckFilter;
+import com.example.lecture_B.security.handler.UserLoginSuccessHandler;
 import com.example.lecture_B.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -14,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -41,24 +44,30 @@ public class CustomSecurityConfig {
     private final PasswordEncoder passwordEncoder;
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        log.info("------------------------- web configure ------------------------------");
-
-        // 정적 리소스 필터링 제외
-        return (web) -> web.ignoring()
-                .requestMatchers(
-                        PathRequest.toStaticResources().atCommonLocations()
-                );
+    public UserLoginSuccessHandler userLoginSuccessHandler() {
+        return new UserLoginSuccessHandler(jwtUtil); // JwtUtil을 주입
     }
+
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    public LoginFilter loginFilter(AuthenticationManager authenticationManager) {
+        return new LoginFilter("/api/auth/signIn", authenticationManager,userLoginSuccessHandler());
+    }
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/signUp").permitAll()  // 로그인과 회원가입은 모두 허용
+                        .requestMatchers("/api/auth/signIn", "/api/auth/signUp").permitAll()  // 로그인과 회원가입은 모두 허용
                         .requestMatchers("/api/boards/**").permitAll()  // 게시판은 USER 권한이 있어야 접근 가능
-                        .anyRequest().authenticated()  // 그 외 요청은 인증 필요
+                        .anyRequest().permitAll()  // 그 외 요청은 인증 필요
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())); // CORS 설정
 
@@ -80,6 +89,8 @@ public class CustomSecurityConfig {
 
         // 인증 매니저 등록...
         http.authenticationManager(authenticationManager);
+
+        http.addFilterBefore(loginFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class);
 
         // /api로 시작하는 모든 경로는 TokenCheckFilter 동작
         http.addFilterBefore(
