@@ -60,75 +60,75 @@ public class AuthController {
     }
 
 
-    @RequestMapping(value = "/signIn", method = RequestMethod.POST)
-    public ResponseEntity<?> signin(@RequestBody SignUpDTO dto) {
-        log.info(dto.getUserId());
-
-        try {
-            // AuthService를 사용하여 사용자의 인증을 시도
-            User user = userService.signIn(dto.getUserId(), dto.getUserPw());
-
-            // 사용자가 존재하는 경우
-            if (user != null) {
-                // 사용자의 이메일을 기반으로 UserDetails를 가져옴
-                UserDetails userDetails = customUserDetailService.loadUserByUsername(dto.getUserId());
-
-                // 토큰 생성
-                // UsernamePasswordAuthenticationToken, UserId=Principal, Password=Credential 역할을 함
-                UsernamePasswordAuthenticationToken authenticationToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(), userDetails.getAuthorities());
-
-                // SecurityContextHolder에 인증을 설정
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-
-                // JWT Payload에 userId, userName, email, roles 값을 실어서 보냄
-                Map<String, Object> claim = new HashMap<>();
-                claim.put("userId", user.getUserId());      //유저 ID
-                claim.put("nickname", user.getNickname());  //유저 닉네임
-//            claim.put("phoneNum", user.getPhoneNum());    // 전화번호는 넣었다 민감할거 같아 제거.
-                claim.put("email", user.getEmail());        //이메일
-                claim.put("roles", userDetails.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toList()));     //유저 권한.
-
-                String accessToken = jwtUtil.generateToken(claim, 1);   //엑세스토큰 기한 1일 추후 시간을 줄일 예정.
-                String refreshToken = jwtUtil.generateToken(claim, 30); //리프레시토큰 기한 30일 추후 시간을 줄일 예정.
-
-                // 리프레시 토큰을 DB에 저장하기 위한 메서드  userID 값과 같이 저장.
-                Optional<RefreshToken> existingRefreshToken = refreshTokenRepository.findByUserId(userDetails.getUsername());
-
-                //RefreshToken 저장소에서 사용자의 기존 Refresh Token이 있는지 확인
-                if (existingRefreshToken.isPresent()) {
-                    //기존 Refresh Token이 있으면 갱신
-                    RefreshToken firstRefreshToken = existingRefreshToken.get();
-                    firstRefreshToken.setToken(refreshToken);
-                    refreshTokenRepository.save(firstRefreshToken);
-                } else {
-                    //없으면 새로운 Refresh Token을 생성
-                    RefreshToken newRefreshToken = new RefreshToken();
-                    newRefreshToken.setToken(refreshToken);
-                    newRefreshToken.setUserId(userDetails.getUsername());
-                    refreshTokenRepository.save(newRefreshToken);
-                }
-
-                // 토큰 값 저장.
-                Map<String, String> tokens = Map.of("accessToken", accessToken, "refreshToken", refreshToken);
-
-                // ok()에 클라이언트에게 반환할 토큰을 포함
-                // ResponseEntity나 @ResponseBody 어노테이션을 사용하면 스프링은 기본적으로 데이터를 JSON 형식으로 변환하여 클라이언트에게 응답함.
-                // 결론은 클라이언트는 JSON 형식으로 데이터를 받게 됨ㅁ
-                return ResponseEntity.ok(tokens);
-            } else {
-                Map<String, String> errorReponse = new HashMap<>();
-                errorReponse.put("error", "아이디나 비밀번호가 맞지 않습니다.");
-
-                // 401에러 발생
-                return ResponseEntity.status(401).body(errorReponse);
-            }
-        }catch (UserService.UseridException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
+//    @RequestMapping(value = "/signIn", method = RequestMethod.POST)
+//    public ResponseEntity<?> signin(@RequestBody SignUpDTO dto) {
+//        log.info(dto.getUserId());
+//
+//        try {
+//            // AuthService를 사용하여 사용자의 인증을 시도
+//            User user = userService.signIn(dto.getUserId(), dto.getUserPw());
+//
+//            // 사용자가 존재하는 경우
+//            if (user != null) {
+//                // 사용자의 이메일을 기반으로 UserDetails를 가져옴
+//                UserDetails userDetails = customUserDetailService.loadUserByUsername(dto.getUserId());
+//
+//                // 토큰 생성
+//                // UsernamePasswordAuthenticationToken, UserId=Principal, Password=Credential 역할을 함
+//                UsernamePasswordAuthenticationToken authenticationToken =
+//                        new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(), userDetails.getAuthorities());
+//
+//                // SecurityContextHolder에 인증을 설정
+//                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+//
+//                // JWT Payload에 userId, userName, email, roles 값을 실어서 보냄
+//                Map<String, Object> claim = new HashMap<>();
+//                claim.put("userId", user.getUserId());      //유저 ID
+//                claim.put("nickname", user.getNickname());  //유저 닉네임
+////            claim.put("phoneNum", user.getPhoneNum());    // 전화번호는 넣었다 민감할거 같아 제거.
+//                claim.put("email", user.getEmail());        //이메일
+//                claim.put("roles", userDetails.getAuthorities().stream()
+//                        .map(GrantedAuthority::getAuthority)
+//                        .collect(Collectors.toList()));     //유저 권한.
+//
+//                String accessToken = jwtUtil.generateToken(claim, 1);   //엑세스토큰 기한 1일 추후 시간을 줄일 예정.
+//                String refreshToken = jwtUtil.generateToken(claim, 30); //리프레시토큰 기한 30일 추후 시간을 줄일 예정.
+//
+//                // 리프레시 토큰을 DB에 저장하기 위한 메서드  userID 값과 같이 저장.
+//                Optional<RefreshToken> existingRefreshToken = refreshTokenRepository.findByUserId(userDetails.getUsername());
+//
+//                //RefreshToken 저장소에서 사용자의 기존 Refresh Token이 있는지 확인
+//                if (existingRefreshToken.isPresent()) {
+//                    //기존 Refresh Token이 있으면 갱신
+//                    RefreshToken firstRefreshToken = existingRefreshToken.get();
+//                    firstRefreshToken.setToken(refreshToken);
+//                    refreshTokenRepository.save(firstRefreshToken);
+//                } else {
+//                    //없으면 새로운 Refresh Token을 생성
+//                    RefreshToken newRefreshToken = new RefreshToken();
+//                    newRefreshToken.setToken(refreshToken);
+//                    newRefreshToken.setUserId(userDetails.getUsername());
+//                    refreshTokenRepository.save(newRefreshToken);
+//                }
+//
+//                // 토큰 값 저장.
+//                Map<String, String> tokens = Map.of("accessToken", accessToken, "refreshToken", refreshToken);
+//
+//                // ok()에 클라이언트에게 반환할 토큰을 포함
+//                // ResponseEntity나 @ResponseBody 어노테이션을 사용하면 스프링은 기본적으로 데이터를 JSON 형식으로 변환하여 클라이언트에게 응답함.
+//                // 결론은 클라이언트는 JSON 형식으로 데이터를 받게 됨ㅁ
+//                return ResponseEntity.ok(tokens);
+//            } else {
+//                Map<String, String> errorReponse = new HashMap<>();
+//                errorReponse.put("error", "아이디나 비밀번호가 맞지 않습니다.");
+//
+//                // 401에러 발생
+//                return ResponseEntity.status(401).body(errorReponse);
+//            }
+//        }catch (UserService.UseridException e){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+//        }
+//    }
 
 
     @PostMapping("/logout")
