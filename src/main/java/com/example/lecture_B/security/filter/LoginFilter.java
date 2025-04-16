@@ -45,13 +45,13 @@ public class LoginFilter extends AbstractAuthenticationProcessingFilter {
         // UsernamePasswordAuthenticationToken에 UserId와 비밀번호를 담음
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 jsonData.get("userId"),
-                jsonData.get("password")
+                jsonData.get("userPw")
         );
 
         if (jsonData.get("userId") == null || jsonData.get("userId").isEmpty()) {
             throw new AuthenticationServiceException("userId is missing");
         }
-        if (jsonData.get("password") == null || jsonData.get("password").isEmpty()) {
+        if (jsonData.get("userPw") == null || jsonData.get("userPw").isEmpty()) {
             throw new AuthenticationServiceException("Password is missing");
         }
         log.info("authenticationToken : " + authenticationToken.getPrincipal().toString());

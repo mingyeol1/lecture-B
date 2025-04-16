@@ -3,8 +3,10 @@ package com.example.lecture_B.config;
 import com.example.lecture_B.entity.CustomUser;
 import com.example.lecture_B.repository.RefreshTokenRepository;
 import com.example.lecture_B.security.CustomUserDetailService;
+import com.example.lecture_B.security.filter.LoginFilter;
 import com.example.lecture_B.security.filter.RefreshTokenFilter;
 import com.example.lecture_B.security.filter.TokenCheckFilter;
+import com.example.lecture_B.security.handler.UserLoginSuccessHandler;
 import com.example.lecture_B.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -54,16 +56,15 @@ public class CustomSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
+                .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (REST API에서는 불필요)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/signIn", "/api/auth/signUp").permitAll()  // 로그인과 회원가입은 모두 허용
-                        .requestMatchers("/api/boards/**").permitAll()  // 게시판은 USER 권한이 있어야 접근 가능
-                        .anyRequest().permitAll()  // 그 외 요청은 인증 필요
+                        .requestMatchers("/api/auth/signIn", "/api/auth/signUp").permitAll()  // 로그인과 회원가입은 인증 없이 접근 가능
+                        .requestMatchers("/api/boards/**").hasRole("USER")  // 게시판 관련 API는 USER 권한 필요
+                        .anyRequest().authenticated()  // 그 외 모든 요청은 인증 필요
                 )
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())); // CORS 설정
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())); // CORS 설정 적용
 
-
-        //로그인시 세션데이터 생성x
+        // 세션을 사용하지 않는 STATELESS 설정 (JWT 기반 인증)
         http.sessionManagement((session) -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
@@ -72,24 +73,32 @@ public class CustomSecurityConfig {
                 http.getSharedObject(AuthenticationManagerBuilder.class);
 
         authenticationManagerBuilder
-                .userDetailsService(customUserDetailService)
-                .passwordEncoder(passwordEncoder);
+                .userDetailsService(customUserDetailService)  // 사용자 정보를 가져오는 서비스 설정
+                .passwordEncoder(passwordEncoder);  // 비밀번호 인코더 설정
 
-        // Get AuthenticationManager
+        // AuthenticationManager 생성
         AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
 
-        // 인증 매니저 등록...
+        // 인증 매니저 등록
         http.authenticationManager(authenticationManager);
 
-        // /api로 시작하는 모든 경로는 TokenCheckFilter 동작
+        // LoginFilter 설정 - 로그인 요청 처리
+        LoginFilter loginFilter = new LoginFilter("/api/auth/signIn");
+        loginFilter.setAuthenticationManager(authenticationManager);
+        loginFilter.setAuthenticationSuccessHandler(new UserLoginSuccessHandler(jwtUtil));
+        http.addFilterBefore(loginFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // TokenCheckFilter 설정 - JWT 토큰 검증
         http.addFilterBefore(
-                tokenCheckFilter(jwtUtil, customUserDetailService),
+                tokenCheckFilter(jwtUtil, customUserDetailService),  // JWT 검증 필터
                 UsernamePasswordAuthenticationFilter.class
         );
 
-        // refreshToken 호출 처리
-        http.addFilterBefore(new RefreshTokenFilter("/refreshToken", jwtUtil, refreshTokenRepository), TokenCheckFilter.class);
-
+        // RefreshTokenFilter 설정 - 토큰 갱신 처리
+        http.addFilterBefore(
+                new RefreshTokenFilter("/api/auth/refreshToken", jwtUtil, refreshTokenRepository),  // 토큰 갱신 엔드포인트 설정
+                TokenCheckFilter.class
+        );
 
         return http.build();
     }
