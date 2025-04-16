@@ -42,11 +42,6 @@ public class TokenCheckFilter extends OncePerRequestFilter {    // OncePerReques
             return;
         }
 
-        if (path.startsWith("/api/boards") || path.startsWith("/api/lectures")) {
-            filterChain.doFilter(request, response);  // 토큰 없이 통과
-            return;
-        }
-
         if(!path.startsWith("/api")) {  // /api로 시작하지 않는 경우는 리턴
             filterChain.doFilter(request,response); // 다음 필터로 넘김
             return;
